@@ -17,8 +17,6 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddDefaultTokenProviders();
 
 
-
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("VueCors", policy =>

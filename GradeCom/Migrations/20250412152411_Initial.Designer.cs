@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GradeCom.Migrations
 {
     [DbContext(typeof(GrateContext))]
-    [Migration("20250412121048_Initial")]
+    [Migration("20250412152411_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
