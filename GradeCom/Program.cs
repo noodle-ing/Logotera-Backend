@@ -1,5 +1,7 @@
 using GradeCom.Context;
 using GradeCom.Models;
+using GradeCom.Services.AuthenticationServices;
+using GradeCom.Services.UserServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +31,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+
  
 var app = builder.Build();
 app.UseCors("VueCors");
