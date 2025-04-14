@@ -42,30 +42,24 @@ public class UserService : IUserService
         return UserMapper.UserUserDto(user);
     }
 
-    public async Task<IEnumerable<UserDto>> Get(string userId)
-    {
-        // var users = await _dbContext.Users
-        //     .Include(u => u.Reports)
-        //     .Include(u => u.Enterprises)
-        //     .Where(u => u.Department.Enterprise.OwnerId == userId)
-        //     .ToListAsync();
-        //
-        // return users.Select(UserMapper.UserUserDto);
-    }
+    // public async Task<IEnumerable<UserDto>> Get(string userId)
+    // {
+    //     var users = await _dbContext.Users
+    //         .ToListAsync();
+    //     
+    //     return users.Select(UserMapper.UserUserDto);
+    // }
 
-    public async Task<UserDto> Get(string id, string directorId)
+    public async Task<UserDto> Get(string id)
     {
-        // var user = await _dbContext.Users
-        //     .Include(u => u.Enterprises)
-        //     .Include(u => u.Reports)
-        //     .Where(u => u.Department.Enterprise.OwnerId == directorId)
-        //     .FirstOrDefaultAsync(u => u.Id == id);
-        //
-        // if (user is null)
-        //     throw new HttpException(StatusCodes.Status404NotFound,
-        //         "Пользователь с таким id не был найдке");
-        //
-        // return UserMapper.UserUserDto(user);
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == id);
+        
+        if (user is null)
+            throw new HttpException(StatusCodes.Status404NotFound,
+                "Пользователь с таким id не был найдке");
+        
+        return UserMapper.UserUserDto(user);
     }
 
     public async Task<UserDto> Put(UserDto userDto)
