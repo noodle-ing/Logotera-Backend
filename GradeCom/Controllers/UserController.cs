@@ -49,12 +49,12 @@ public class UserController : ControllerBase
     // public async Task<ActionResult<IEnumerable<UserDto>>> Get(string id) =>
     //     Ok(await _userService.Get(id));
 
-    [Authorize]
+    // [Authorize]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<UserDto>> Get(string id) => 
         Ok(await _userService.Get(id));
 
-    [Authorize]
+    // [Authorize]
     [HttpPut]
     // [Authorize(Policy = "Admin")]
     public async Task<ActionResult<UserDto>> Put(UserDto userDto) =>
