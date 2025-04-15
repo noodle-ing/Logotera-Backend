@@ -41,11 +41,11 @@ public class AuthenticationService : IAuthenticationService
                 $"Невозможно зарегистрировать пользователя {requestDto.Email}," +
                 $"ошибка: {GetErrorsText(result.Errors)}");
 
-        // result = await _userManager.AddToRoleAsync(user, "Admin");
+        result = await _userManager.AddToRoleAsync(user, "Admin");
 
-        // if (!result.Succeeded)
-        //     throw new ArgumentException($"Невозможно добавить пользователя {user} в роль Admin" +
-        //                                 $"ошибка: {GetErrorsText(result.Errors)}");
+        if (!result.Succeeded)
+            throw new ArgumentException($"Невозможно добавить пользователя {user} в роль Admin" +
+                                        $"ошибка: {GetErrorsText(result.Errors)}");
         
         return await Login(new LoginRequestDto { Email = requestDto.Email, 
             Password = requestDto.Password });
@@ -67,9 +67,9 @@ public class AuthenticationService : IAuthenticationService
             // new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
     
-        // var usersRoles = await _userManager.GetRolesAsync(user);
+        var usersRoles = await _userManager.GetRolesAsync(user);
     
-        // authClaims.AddRange(usersRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+        authClaims.AddRange(usersRoles.Select(role => new Claim(ClaimTypes.Role, role)));
     
     
         return new AuthResponseDto {UserDto = UserMapper.UserUserDto(user)};
