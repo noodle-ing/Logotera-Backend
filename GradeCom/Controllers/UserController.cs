@@ -60,8 +60,8 @@ public class UserController : ControllerBase
     public async Task<ActionResult<UserDto>> Put(UserDto userDto) =>
         Ok(await _userService.Put(userDto));
 
-    [Authorize]
-    [HttpDelete]
+    // [Authorize]
+    [HttpDelete("{id:guid}")]
     // [Authorize(Policy = "Admin")]
     public async Task<ActionResult> Delete(string id)
     {
