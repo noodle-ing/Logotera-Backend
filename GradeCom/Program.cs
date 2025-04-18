@@ -25,9 +25,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("VueCors", policy =>
+    options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:3002")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -102,7 +102,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.UseCors("VueCors");
+app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
