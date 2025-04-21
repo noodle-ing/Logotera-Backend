@@ -10,8 +10,9 @@ public static class UserMapper
         return new UserDto
         {
             Id = user.Id,
-            Name = user.UserName,
+            UserName = user.UserName,
             Surname = user.Surname,
+            Email = user.Email
         };
     }
 
@@ -20,14 +21,16 @@ public static class UserMapper
         return new User
         {
             Id = userDto.Id,
-            Name = userDto.Name,
+            UserName = userDto.UserName,
             Surname = userDto.Surname,
+            Email = userDto.Email
         };
     }
 
     public static void UserDtoUser(UserDto userDto, User user)
     {
-        user.Name = userDto.Name;
+        user.UserName = userDto.UserName;
         user.Surname = userDto.Surname;
+        user.Email = userDto.Email;
     }
 }

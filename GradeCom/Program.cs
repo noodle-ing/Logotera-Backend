@@ -80,7 +80,6 @@ using (var scope = app.Services.CreateScope())
         adminUser = new User
         {
             UserName = adminRoleName,
-            Name = adminRoleName,
             Email = adminEmail,
             Surname = adminRoleName,
             EmailConfirmed = true,

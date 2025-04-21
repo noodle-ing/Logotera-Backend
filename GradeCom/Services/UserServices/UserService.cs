@@ -24,13 +24,13 @@ public class UserService : IUserService
 
         var user = UserMapper.UserDtoUser(userDto);
 
-        if (user.Name is null ||
+        if (user.UserName is null ||
             user.Surname is null ||
             user.Email is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
                 "Вы ввели данные неверно");
 
-        if (_dbContext.Users.Any(u => u.Name == userDto.Name
+        if (_dbContext.Users.Any(u => u.UserName == userDto.UserName
                                       || u.Surname == userDto.Surname
                                       || u.Email == userDto.Email))
             throw new HttpException(StatusCodes.Status400BadRequest,

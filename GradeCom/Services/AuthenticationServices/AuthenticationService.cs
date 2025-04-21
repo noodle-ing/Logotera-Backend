@@ -28,10 +28,9 @@ public class AuthenticationService : IAuthenticationService
         User user = new()
         {
             Email = requestDto.Email,
-            Name = requestDto.Name,
             Surname = requestDto.Surname,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = requestDto.Email
+            UserName = requestDto.Name
         };
 
         var result = await _userManager.CreateAsync(user, requestDto.Password);
