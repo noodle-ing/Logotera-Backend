@@ -5,4 +5,5 @@ namespace GradeCom.Models;
 public class User : IdentityUser
 {
     public string Surname { get; set; }
+    public string? Description { get; set; }
 }

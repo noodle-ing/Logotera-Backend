@@ -69,4 +69,8 @@ public class UserController : ControllerBase
 
         return Ok("Объект был удален");
     }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<ActionResult<UserDto>> Patch(string id,string description) =>
+        Ok(await _userService.Patch(id, description));
 }

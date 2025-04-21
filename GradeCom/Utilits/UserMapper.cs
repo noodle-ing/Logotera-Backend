@@ -12,7 +12,8 @@ public static class UserMapper
             Id = user.Id,
             UserName = user.UserName,
             Surname = user.Surname,
-            Email = user.Email
+            Email = user.Email,
+            Descripton = user.Description
         };
     }
 
@@ -23,7 +24,8 @@ public static class UserMapper
             Id = userDto.Id,
             UserName = userDto.UserName,
             Surname = userDto.Surname,
-            Email = userDto.Email
+            Email = userDto.Email,
+            Description = userDto.Descripton
         };
     }
 
@@ -32,5 +34,11 @@ public static class UserMapper
         user.UserName = userDto.UserName;
         user.Surname = userDto.Surname;
         user.Email = userDto.Email;
+        user.Description = userDto.Descripton;
+    }
+
+    public static void UserDtoUser(User user, string description)
+    {
+        user.Description = description;
     }
 }

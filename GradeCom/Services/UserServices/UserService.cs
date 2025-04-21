@@ -89,6 +89,18 @@ public class UserService : IUserService
         return UserMapper.UserUserDto(user);
     }
 
+    public async Task<UserDto> Patch(string id, string description)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (user is null)
+            throw new HttpException(StatusCodes.Status400BadRequest,
+                "Вы ввели id неверно");
+        UserMapper.UserDtoUser(user, description);
+        _dbContext.Users.Update(user);
+        await _dbContext.SaveChangesAsync();
+        return UserMapper.UserUserDto(user);
+    }
+
     public async Task Delete(string id)
     {
         var user = await _dbContext.Users.FindAsync(id);
