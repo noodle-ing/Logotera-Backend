@@ -41,6 +41,9 @@ public class UserService : IUserService
 
         return UserMapper.UserUserDto(user);
     }
+    
+   
+
 
     // public async Task<IEnumerable<UserDto>> Get(string userId)
     // {
@@ -89,7 +92,7 @@ public class UserService : IUserService
         return UserMapper.UserUserDto(user);
     }
 
-    public async Task<UserDto> Patch(string id, string description)
+    public async Task<UserDto> Patch(string id, string? description)
     {
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is null)
@@ -110,6 +113,25 @@ public class UserService : IUserService
                 "Вы ввели id неверно");
 
         _dbContext.Users.Remove(user);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task Put(string id, IFormFile file)
+    {
+        var user = await _dbContext.Users.FindAsync(id);
+        if (user == null)
+            throw new HttpException(StatusCodes.Status400BadRequest,
+                "Вы ввели id неверно");
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine("wwwroot/images", fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        user.ProfileImagePath = $"/images/{fileName}";
         await _dbContext.SaveChangesAsync();
     }
 }

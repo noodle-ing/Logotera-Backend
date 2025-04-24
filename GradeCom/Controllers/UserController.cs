@@ -73,4 +73,13 @@ public class UserController : ControllerBase
     [HttpPatch("{id:guid}")]
     public async Task<ActionResult<UserDto>> Patch(string id,string description) =>
         Ok(await _userService.Patch(id, description));
+    
+    
+    // [HttpPut("upload-image/{id}")]
+    // public async Task<IActionResult> UploadProfileImage(string id, IFormFile file)
+    // {
+    //     if (file == null || file.Length == 0)
+    //         return BadRequest("No file uploaded");
+    //     return Ok(_userService.Put(id, file));
+    // }
 }

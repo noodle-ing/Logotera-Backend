@@ -35,10 +35,29 @@ public static class UserMapper
         user.Surname = userDto.Surname;
         user.Email = userDto.Email;
         user.Description = userDto.Descripton;
+        user.ProfileImagePath = UserImageUpdate(userDto);
     }
 
-    public static void UserDtoUser(User user, string description)
+    public static void UserDtoUser(User user, string? description)
     {
         user.Description = description;
+    }
+
+    public static string UserImageUpdate(UserDto userDto)
+    {
+        string userPath = " ";
+        if (userDto.ProfileImagePath != null)
+        {
+            var fileName = $"{Guid.NewGuid()}_{userDto.ProfileImagePath.FileName}";
+            var filePath = Path.Combine("wwwroot/images", fileName); // путь к папке с картинками
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                userDto.ProfileImagePath.CopyToAsync(stream);
+            }
+            userPath = $"/images/{fileName}";
+             
+        }
+        return userPath;
     }
 }

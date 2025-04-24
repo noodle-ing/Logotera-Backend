@@ -7,4 +7,5 @@ public class UserDto
     public string? Surname { get; init; }
     public string? Email { get; init; }
     public string? Descripton { get; set; }
+    public IFormFile? ProfileImagePath { get; set; }
 }
