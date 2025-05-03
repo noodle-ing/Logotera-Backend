@@ -22,7 +22,7 @@ public class UserService : IUserService
             throw new HttpException(StatusCodes.Status400BadRequest,
                 "Вы неверно ввели данные");
 
-        var user = UserMapper.UserDtoUser(userDto);
+        var user = await UserMapper.UserDtoToUserAsync(userDto);
 
         if (user.UserName is null ||
             user.Surname is null ||
@@ -42,9 +42,6 @@ public class UserService : IUserService
         return UserMapper.UserUserDto(user);
     }
     
-   
-
-
     // public async Task<IEnumerable<UserDto>> Get(string userId)
     // {
     //     var users = await _dbContext.Users

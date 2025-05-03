@@ -13,8 +13,26 @@ public static class UserMapper
             UserName = user.UserName,
             Surname = user.Surname,
             Email = user.Email,
-            Descripton = user.Description
+            Description = user.Description,
         };
+    }
+    
+    public static async Task<User> UserDtoToUserAsync(UserDto dto)
+    {
+        var user = new User
+        {
+            UserName = dto.UserName,
+            Surname = dto.Surname,
+            Email = dto.Email,
+            Description = dto.Description
+        };
+
+        if (dto.ProfileImageFile != null)
+        {
+            user.ProfileImagePath = await UserImageUpdate(dto.ProfileImageFile);
+        }
+
+        return user;
     }
 
     public static User UserDtoUser(UserDto userDto)
@@ -25,7 +43,7 @@ public static class UserMapper
             UserName = userDto.UserName,
             Surname = userDto.Surname,
             Email = userDto.Email,
-            Description = userDto.Descripton
+            Description = userDto.Description
         };
     }
 
@@ -34,8 +52,8 @@ public static class UserMapper
         user.UserName = userDto.UserName;
         user.Surname = userDto.Surname;
         user.Email = userDto.Email;
-        user.Description = userDto.Descripton;
-        user.ProfileImagePath = UserImageUpdate(userDto);
+        user.Description = userDto.Description;
+        // user.ProfileImagePath = UserImageUpdate(userDto);
     }
 
     public static void UserDtoUser(User user, string? description)
@@ -43,21 +61,23 @@ public static class UserMapper
         user.Description = description;
     }
 
-    public static string UserImageUpdate(UserDto userDto)
+    public static async Task<string?> UserImageUpdate(IFormFile? file)
     {
-        string userPath = " ";
-        if (userDto.ProfileImagePath != null)
-        {
-            var fileName = $"{Guid.NewGuid()}_{userDto.ProfileImagePath.FileName}";
-            var filePath = Path.Combine("wwwroot/images", fileName); // путь к папке с картинками
+        if (file == null) return null;
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                userDto.ProfileImagePath.CopyToAsync(stream);
-            }
-            userPath = $"/images/{fileName}";
-             
+        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        var filePath = Path.Combine(folderPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
         }
-        return userPath;
+
+        return $"/images/{fileName}"; 
     }
 }

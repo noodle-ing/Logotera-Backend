@@ -37,8 +37,9 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request) =>
         Ok(await _authenticationService.Register(request));
     
-    [Authorize]
+    // [Authorize]
     [HttpPost]
+    [Consumes("multipart/form-data")]
     // [Authorize(Policy = "Admin")]
     public async Task<ActionResult<UserDto>> Post(UserDto userDto) =>
         Ok(await _userService.Post(userDto));

@@ -1,8 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
 using GradeCom.Utilits;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GradeCom.Services.AuthenticationServices;
 
@@ -63,32 +66,33 @@ public class AuthenticationService : IAuthenticationService
         {
             new(ClaimTypes.Name, user.UserName),
             new(ClaimTypes.Email, user.Email),
-            // new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
     
         var usersRoles = await _userManager.GetRolesAsync(user);
     
         authClaims.AddRange(usersRoles.Select(role => new Claim(ClaimTypes.Role, role)));
-    
-    
-        return new AuthResponseDto {UserDto = UserMapper.UserUserDto(user)};
+        var token = GetToken(authClaims);
+
+        return new AuthResponseDto { token = new JwtSecurityTokenHandler()
+            .WriteToken(token), UserDto = UserMapper.UserUserDto(user), UserRole = usersRoles};
     }
 
-    // private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
-    // {
-    //     var authSigningKey = new SymmetricSecurityKey(
-    //         Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-    //
-    //     var token = new JwtSecurityToken(
-    //         issuer: _configuration["JWT:ValidIssuer"],
-    //         audience: _configuration["JWT:ValidAudience"],
-    //         expires: DateTime.Now.AddHours(1),
-    //         claims: authClaims,
-    //         signingCredentials: new SigningCredentials(authSigningKey,
-    //             SecurityAlgorithms.HmacSha256));
-    //
-    //     return token;
-    // }
+    private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
+    {
+        var authSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+    
+        var token = new JwtSecurityToken(
+            issuer: _configuration["JWT:ValidIssuer"],
+            audience: _configuration["JWT:ValidAudience"],
+            expires: DateTime.Now.AddHours(1),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey,
+                SecurityAlgorithms.HmacSha256));
+    
+        return token;
+    }
     
     public static string GetErrorsText(IEnumerable<IdentityError> errors)
         => string.Join(", ", errors.Select(error => error.Description).ToArray());
