@@ -3,10 +3,12 @@ using GradeCom.Context;
 using GradeCom.Models;
 using GradeCom.Services.AuthenticationServices;
 using GradeCom.Services.UserServices;
+using GradeCom.Utilits;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -14,7 +16,7 @@ var configuration = builder.Configuration;
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// builder.Services.AddSwaggerGen();   
 
 builder.Services.AddDbContext<GrateContext>(options => options.UseNpgsql(connectionString));
 
@@ -42,10 +44,42 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "GrateComApi", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
+
 
 builder.Services.AddCors(options =>
 {
@@ -64,62 +98,23 @@ builder.Services.AddAuthorizationBuilder()
 
 var app = builder.Build();
 
-
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-    var roles = new[] {new Role("Admin"){CanCreateTest = true}, 
-        new Role("Student"){CanCreateTest = true},
-        new Role("Teacher"){CanCreateTest = false}
-    };
+    var roles = new[] { "Admin", "Student", "Teacher"};
  
     foreach (var role in roles)
-        if (!await roleManager.RoleExistsAsync(role.Name!))
-            await roleManager.CreateAsync(role);
-}
-
-using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-
-    var adminRoleName = "Admin";    
-    var adminEmail = "admin@system.com";
-    var adminPassword = "Admin123!"; 
-
-   
-    if (!await roleManager.RoleExistsAsync(adminRoleName))
     {
-        var adminRole = new Role(adminRoleName)
+        if (!await roleManager.RoleExistsAsync(role))
         {
-            Description = "Super user with full access",
-            CanCreateTest = true,
-        };
-
-        await roleManager.CreateAsync(adminRole);
-    }
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        adminUser = new User
-        {
-            UserName = adminRoleName,
-            Email = adminEmail,
-            Surname = adminRoleName,
-            EmailConfirmed = true,
-        };
-
-        var result = await userManager.CreateAsync(adminUser, adminPassword);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, adminRoleName);
-        }
-        else
-        {
-            foreach (var error in result.Errors)
+            var newRole = new Role
             {
-                Console.WriteLine($"Error creating admin user: {error.Description}");
-            }
+                Id = Guid.NewGuid().ToString(), 
+                Name = role,
+                NormalizedName = role.ToUpper() 
+            };
+
+            await roleManager.CreateAsync(newRole);
         }
     }
 }

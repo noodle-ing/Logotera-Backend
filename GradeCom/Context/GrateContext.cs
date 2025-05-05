@@ -4,11 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GradeCom.Context;
 
-public class GrateContext : IdentityDbContext<User>
+public class GrateContext : IdentityDbContext<User, Role, string>
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Grade> Grades { get; set; }
-    public DbSet<Role> Roles { get; set; }
     
     public GrateContext(DbContextOptions<GrateContext> options)
         : base(options)
