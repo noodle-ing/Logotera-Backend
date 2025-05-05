@@ -83,7 +83,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
 
-    var adminRoleName = "Admin";
+    var adminRoleName = "Admin";    
     var adminEmail = "admin@system.com";
     var adminPassword = "Admin123!"; 
 

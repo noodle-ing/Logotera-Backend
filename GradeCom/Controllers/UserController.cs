@@ -1,4 +1,5 @@
-﻿using GradeCom.Dtos.UserDtos;
+﻿using System.Security.Claims;
+using GradeCom.Dtos.UserDtos;
 using GradeCom.Services.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,10 +51,18 @@ public class UserController : ControllerBase
     // public async Task<ActionResult<IEnumerable<UserDto>>> Get(string id) =>
     //     Ok(await _userService.Get(id));
 
-    // [Authorize]
-    [HttpGet("{id:guid}")]
-    public async Task<ActionResult<UserDto>> Get(string id) => 
-        Ok(await _userService.Get(id));
+    [Authorize]
+    [HttpGet("profile")]
+    public async Task<IActionResult> GetMyProfile()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (email == null)
+            return Unauthorized();
+
+        var userDto = await _userService.Get(email);
+        return Ok(userDto);
+    }
 
     // [Authorize]
     [HttpPut]

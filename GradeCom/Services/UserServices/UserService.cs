@@ -50,14 +50,14 @@ public class UserService : IUserService
     //     return users.Select(UserMapper.UserUserDto);
     // }
 
-    public async Task<UserDto> Get(string id)
+    public async Task<UserDto> Get(string email)
     {
         var user = await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Email == email);
         
         if (user is null)
             throw new HttpException(StatusCodes.Status404NotFound,
-                "Пользователь с таким id не был найдке");
+                "Пользователь с таким email не был найдке");
         
         return UserMapper.UserUserDto(user);
     }
