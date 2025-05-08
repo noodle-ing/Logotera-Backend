@@ -1,4 +1,5 @@
 ﻿using GradeCom.Dtos.UserDtos;
+using GradeCom.Models;
 
 namespace GradeCom.Services.UserServices;
 
@@ -9,4 +10,5 @@ public interface IUserService
     Task<UserDto> Put(UserDto userDto);
     Task<UserDto> Patch(string id, string description);
     Task Delete(string id);
+    Task<List<User>> GetAllUsersAsync(string userId);
 }

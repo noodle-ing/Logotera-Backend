@@ -2,6 +2,7 @@
 using GradeCom.Context;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Exceptions;
+using GradeCom.Models;
 using GradeCom.Utilits;
 using Microsoft.EntityFrameworkCore;
 
@@ -112,6 +113,8 @@ public class UserService : IUserService
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();
     }
+    
+
 
     public async Task Put(string id, IFormFile file)
     {
@@ -130,5 +133,12 @@ public class UserService : IUserService
 
         user.ProfileImagePath = $"/images/{fileName}";
         await _dbContext.SaveChangesAsync();
+    }
+    
+    public async Task<List<User>> GetAllUsersAsync(string email)
+    {
+        return await _dbContext.Users
+            .Where(u => u.Email != email)
+            .ToListAsync();
     }
 }

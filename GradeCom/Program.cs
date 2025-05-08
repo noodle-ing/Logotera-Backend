@@ -38,6 +38,8 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
         ValidAudience = configuration["JWT:ValidAudience"],
         ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"])),
@@ -59,6 +61,7 @@ builder.Services.AddSwaggerGen(c =>
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
+        BearerFormat = "JWT",
         Scheme = "Bearer"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -100,6 +103,8 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
     var roles = new[] { "Admin", "Student", "Teacher"};
  
@@ -115,6 +120,38 @@ using (var scope = app.Services.CreateScope())
             };
 
             await roleManager.CreateAsync(newRole);
+        }
+    }
+    
+    string adminUserName = config["DefaultAdmin:Username"];
+    string adminPassword = config["DefaultAdmin:Password"];
+    string adminEmail = config["DefaultAdmin:Email"];
+    string adminSurname = config["DefaultAdmin:Surname"];
+
+
+    var adminUser = await userManager.FindByNameAsync(adminUserName);
+    if (adminUser == null)
+    {
+        adminUser = new User
+        {
+            UserName = adminUserName,
+            NormalizedUserName = adminUserName.ToUpper(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            Email = adminEmail,
+            Surname = adminSurname
+        };
+
+        var result = await userManager.CreateAsync(adminUser, adminPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
+        else
+        {
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine($"Error creating admin: {error.Description}");
+            }
         }
     }
 }

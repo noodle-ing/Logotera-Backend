@@ -38,18 +38,14 @@ public class UserController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto request) =>
         Ok(await _authenticationService.Register(request));
     
-    // [Authorize]
+    [Authorize]
     [HttpPost]
     [Consumes("multipart/form-data")]
     // [Authorize(Policy = "Admin")]
     public async Task<ActionResult<UserDto>> Post(UserDto userDto) =>
         Ok(await _userService.Post(userDto));
 
-    // [Authorize]
-    // [HttpGet("{id:guid}")]
-    //
-    // public async Task<ActionResult<IEnumerable<UserDto>>> Get(string id) =>
-    //     Ok(await _userService.Get(id));
+
 
     [Authorize]
     [HttpGet("profile")]
@@ -83,6 +79,21 @@ public class UserController : ControllerBase
     [HttpPatch("{id:guid}")]
     public async Task<ActionResult<UserDto>> Patch(string id,string description) =>
         Ok(await _userService.Patch(id, description));
+    
+    
+    [Authorize]
+    [Authorize(Policy = "Admin")]
+    [HttpGet("users")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (email == null)
+            return Unauthorized();
+        
+        var users = await _userService.GetAllUsersAsync(email);
+        return Ok(users);
+    }
     
     
     // [HttpPut("upload-image/{id}")]
