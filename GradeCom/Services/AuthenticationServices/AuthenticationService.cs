@@ -75,7 +75,7 @@ public class AuthenticationService : IAuthenticationService
         var token = GetToken(authClaims);
 
         return new AuthResponseDto { token = new JwtSecurityTokenHandler()
-            .WriteToken(token), UserDto = UserMapper.UserUserDto(user), UserRole = usersRoles};
+            .WriteToken(token), UserDto = UserMapper.UserUserDto(user), UserRole = usersRoles.FirstOrDefault()};
     }
 
     private JwtSecurityToken GetToken(IEnumerable<Claim> authClaims)
