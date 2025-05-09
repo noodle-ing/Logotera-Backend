@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GradeCom.Migrations
 {
     [DbContext(typeof(GrateContext))]
-    [Migration("20250505192942_Initial")]
+    [Migration("20250509153755_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -36,6 +36,12 @@ namespace GradeCom.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<int>("StudentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -44,7 +50,33 @@ namespace GradeCom.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubjectId");
+
                     b.ToTable("Grades");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Group", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TeacherId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("Groups");
                 });
 
             modelBuilder.Entity("GradeCom.Models.Role", b =>
@@ -77,6 +109,76 @@ namespace GradeCom.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Student", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Subject", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("Subjects");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Teacher", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("SubjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("GradeCom.Models.User", b =>
@@ -259,6 +361,76 @@ namespace GradeCom.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("GradeCom.Models.Grade", b =>
+                {
+                    b.HasOne("GradeCom.Models.Student", "Studen")
+                        .WithMany("Grades")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GradeCom.Models.Subject", "Subject")
+                        .WithMany("Grades")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Studen");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Group", b =>
+                {
+                    b.HasOne("GradeCom.Models.Teacher", null)
+                        .WithMany("Groups")
+                        .HasForeignKey("TeacherId");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Student", b =>
+                {
+                    b.HasOne("GradeCom.Models.Group", "Group")
+                        .WithMany("Students")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("GradeCom.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Subject", b =>
+                {
+                    b.HasOne("GradeCom.Models.Group", "Group")
+                        .WithMany("Subjects")
+                        .HasForeignKey("GroupId");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Teacher", b =>
+                {
+                    b.HasOne("GradeCom.Models.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId");
+
+                    b.HasOne("GradeCom.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("GradeCom.Models.Role", null)
@@ -308,6 +480,28 @@ namespace GradeCom.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Group", b =>
+                {
+                    b.Navigation("Students");
+
+                    b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Student", b =>
+                {
+                    b.Navigation("Grades");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Subject", b =>
+                {
+                    b.Navigation("Grades");
+                });
+
+            modelBuilder.Entity("GradeCom.Models.Teacher", b =>
+                {
+                    b.Navigation("Groups");
                 });
 #pragma warning restore 612, 618
         }

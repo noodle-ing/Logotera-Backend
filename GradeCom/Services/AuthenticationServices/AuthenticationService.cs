@@ -13,11 +13,15 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly StudentAuthenticationService _studentService;
+    private readonly TeacherAuthenticationService _teacherService;
 
-    public AuthenticationService(UserManager<User> userManager, IConfiguration configuration)
+    public AuthenticationService(UserManager<User> userManager, IConfiguration configuration, StudentAuthenticationService studentService, TeacherAuthenticationService teacherService)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _studentService = studentService;
+        _teacherService = teacherService;
     }
 
     public async Task<AuthResponseDto> Register(RegisterRequestDto requestDto)
@@ -48,7 +52,10 @@ public class AuthenticationService : IAuthenticationService
         if (!result.Succeeded)
             throw new ArgumentException($"Невозможно добавить пользователя {user} в роль Admin" +
                                         $"ошибка: {GetErrorsText(result.Errors)}");
-        
+        if (requestDto.Role == "Student")
+            await _studentService.CreateStudentProfileAsync(user);
+        else if (requestDto.Role == "Teacher")
+            await _teacherService.CreateTeacherProfileAsync(user);
         return await Login(new LoginRequestDto { Email = requestDto.Email, 
             Password = requestDto.Password });
     }

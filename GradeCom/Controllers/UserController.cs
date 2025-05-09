@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GradeCom.Dtos.UserDtos;
+using GradeCom.Models;
 using GradeCom.Services.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,9 +67,9 @@ public class UserController : ControllerBase
     public async Task<ActionResult<UserDto>> Put(UserDto userDto) =>
         Ok(await _userService.Put(userDto));
 
-    // [Authorize]
+    [Authorize]
     [HttpDelete("{id:guid}")]
-    // [Authorize(Policy = "Admin")]
+    [Authorize(Policy = "Admin")]
     public async Task<ActionResult> Delete(string id)
     {
         await _userService.Delete(id);
@@ -94,6 +95,16 @@ public class UserController : ControllerBase
         var users = await _userService.GetAllUsersAsync(email);
         return Ok(users);
     }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    // [HttpPost("group")]
+    // public async Task CreateGroup(Group group) =>
+    //     Ok(await _userService.CreateGroup(group));
+
+    
+    
+    
     
     
     // [HttpPut("upload-image/{id}")]

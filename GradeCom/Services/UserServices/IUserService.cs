@@ -11,4 +11,5 @@ public interface IUserService
     Task<UserDto> Patch(string id, string description);
     Task Delete(string id);
     Task<List<User>> GetAllUsersAsync(string userId);
+    Task CreateGroup(Group group);
 }

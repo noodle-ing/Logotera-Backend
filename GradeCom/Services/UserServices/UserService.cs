@@ -114,6 +114,15 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
     
+    
+    public async Task CreateGroup(Group group)
+    {
+        if (group is null)
+            throw new HttpException(StatusCodes.Status400BadRequest,
+                "Вы неверно ввели данные");
+        _dbContext.Groups.Add(group);
+        await _dbContext.SaveChangesAsync();
+    }
 
 
     public async Task Put(string id, IFormFile file)

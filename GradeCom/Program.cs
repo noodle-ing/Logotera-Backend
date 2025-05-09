@@ -16,10 +16,9 @@ var configuration = builder.Configuration;
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();   
 
 builder.Services.AddDbContext<GrateContext>(options => options.UseNpgsql(connectionString));
-
+    
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<GrateContext>()
     .AddDefaultTokenProviders();
@@ -51,6 +50,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<StudentAuthenticationService>();
+builder.Services.AddScoped<TeacherAuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddSwaggerGen(c =>
