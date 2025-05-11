@@ -20,5 +20,6 @@ public interface IUserService
     Task AddTeacherToSubject(TeacherAddDto dto);
     Task AddGroupToSubject(GroupAddToSubjectDto toSubjectDto);
     Task DeleteTeacherFromSubject(TeacherAddDto toSubjectDto);
+    Task DeleteGroupFromSubject(GroupAddToSubjectDto toSubjectDto);
 
 }

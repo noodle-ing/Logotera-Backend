@@ -247,6 +247,23 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task DeleteGroupFromSubject(GroupAddToSubjectDto toSubjectDto)
+    {
+        var subject = await _dbContext.Subjects
+            .Include(s => s.Groups)
+            .FirstOrDefaultAsync(s => s.Id == toSubjectDto.SubjectId);
+
+        var group = await _dbContext.Groups.FindAsync(toSubjectDto.GroupId);
+
+        if (group == null || subject == null)
+            throw new Exception("Group or Subject not found");
+
+        if (!subject.Groups.Contains(group))
+            subject.Groups.Remove(group);
+        
+        await _dbContext.SaveChangesAsync();
+    }
+
 
     public async Task Put(string id, IFormFile file)
     {
