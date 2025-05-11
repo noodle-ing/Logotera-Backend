@@ -134,6 +134,15 @@ public class UserController : ControllerBase
         await _userService.CreateSubject(dto);
         return Ok(new { message = "Subject created successfully" });
     }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpPost("subject/addTeacher")]
+    public async Task<IActionResult> AddTeacherToSubject([FromBody] TeacherAddDto dto)
+    {
+        await _userService.AddTeacherToSubject(dto);
+        return Ok(new { message = "Teacher add successfully" });
+    }
 
     
     // [HttpPut("upload-image/{id}")]

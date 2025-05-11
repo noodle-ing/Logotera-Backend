@@ -4,6 +4,7 @@ using GradeCom.Context;
 using GradeCom.Dtos.Group;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
+using GradeCom.Enum;
 using GradeCom.Exceptions;
 using GradeCom.Models;
 using GradeCom.Utilits;
@@ -131,32 +132,32 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task AddStudentToGroup(AssignStudentsToGroupDto dto)
+    public async Task AddStudentToGroup(AssignStudentsToGroupDto groupDto)
     {
-        var group = await _dbContext.Groups.FindAsync(dto.GroupId);
+        var group = await _dbContext.Groups.FindAsync(groupDto.GroupId);
         if (group == null)
             throw new Exception("Group not found");
         
         var students = await _dbContext.Students
-            .Where(s => dto.StudentIds.Contains(s.Id) && (s.GroupId == null || s.GroupId != dto.GroupId))
+            .Where(s => groupDto.StudentIds.Contains(s.Id) && (s.GroupId == null || s.GroupId != groupDto.GroupId))
             .ToListAsync();
 
         foreach (var student in students)
         {
-            student.GroupId = dto.GroupId;
+            student.GroupId = groupDto.GroupId;
         }
 
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteStudentFromGroup(AssignStudentsToGroupDto dto)
+    public async Task DeleteStudentFromGroup(AssignStudentsToGroupDto groupDto)
     {
-        var group = await _dbContext.Groups.FindAsync(dto.GroupId);
+        var group = await _dbContext.Groups.FindAsync(groupDto.GroupId);
         if (group == null)
             throw new Exception("Group not found");
         
         var students = await _dbContext.Students
-            .Where(s => dto.StudentIds.Contains(s.Id) && (s.GroupId == dto.GroupId))
+            .Where(s => groupDto.StudentIds.Contains(s.Id) && (s.GroupId == groupDto.GroupId))
             .ToListAsync();
 
         foreach (var student in students)
@@ -167,17 +168,42 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();    
     }
 
-    public async Task CreateSubject(SubjectCreateDto dto)
+    public async Task CreateSubject(SubjectCreateDto subjectDto)
     {
-        if (dto is null)
+        if (subjectDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы неверно ввели данные");
+                "You enter invalid subject");
         var subject = new Subject
         {
-            Name = dto.SubjectName
+            Name = subjectDto.SubjectName
         };
         _dbContext.Subjects.Add(subject);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddTeacherToSubject(TeacherAddDto teacherDto)
+    {
+        if (teacherDto is null)
+            throw new HttpException(StatusCodes.Status400BadRequest, "You enter invalid teacher");
+        
+        var teacher = await _dbContext.Teachers.FindAsync(teacherDto.TeacherId);
+        if (teacher == null)
+            throw new HttpException(StatusCodes.Status404NotFound, "Teacher not found");
+        var subject = await _dbContext.Subjects.FindAsync(teacherDto.SubjectId);
+        if (subject is null)
+            throw new HttpException(StatusCodes.Status400BadRequest, "Subject not found");
+        switch (teacherDto.SubjectRole)
+        {
+            case SubjectRoleType.Lecturer:
+                subject.LecturerTeacherId = teacher.Id;
+                break;
+            case SubjectRoleType.Practitioner:
+                subject.PracticeTeacherId = teacher.Id;
+                break;
+        }
+       
+        await _dbContext.SaveChangesAsync();
+        
     }
 
 
