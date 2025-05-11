@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using GradeCom.Dtos.Group;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
 using GradeCom.Services.UserServices;
@@ -98,10 +99,30 @@ public class UserController : ControllerBase
     
     // [Authorize]
     // [Authorize(Policy = "Admin")]
-    // [HttpPost("group")]
-    // public async Task CreateGroup(Group group) =>
-    //     Ok(await _userService.CreateGroup(group));
-
+    [HttpPost("group")]
+    public async Task<IActionResult> CreateGroup([FromBody] GroupCreateDto dto)
+    {
+        await _userService.CreateGroup(dto);
+        return Ok(new { message = "Группа успешно создана" });
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpPost("groups/assign-students")]
+    public async Task<IActionResult> AddStudentToGroup([FromBody] AssignStudentsToGroupDto dto)
+    {
+        await _userService.AddStudentToGroup(dto);
+        return Ok(new { message = "Студенты успешно добавлены" });
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpDelete("groups/assign-students/delete")]
+    public async Task<IActionResult> DeleteStudentFromGroup([FromBody] AssignStudentsToGroupDto dto)
+    {
+        await _userService.DeleteStudentFromGroup(dto);
+        return Ok(new { message = "Студенты успешно удалены" });
+    }
     
     
     

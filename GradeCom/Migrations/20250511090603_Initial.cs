@@ -57,6 +57,19 @@ namespace GradeCom.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Groups",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Groups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -163,34 +176,22 @@ namespace GradeCom.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Grades",
+                name: "Teachers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    Value = table.Column<short>(type: "smallint", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    StudentId = table.Column<int>(type: "integer", nullable: false),
-                    SubjectId = table.Column<int>(type: "integer", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Grades", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Groups",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    TeacherId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Groups", x => x.Id);
+                    table.PrimaryKey("PK_Teachers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Teachers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -215,8 +216,7 @@ namespace GradeCom.Migrations
                         name: "FK_Students_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -226,41 +226,126 @@ namespace GradeCom.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    GroupId = table.Column<int>(type: "integer", nullable: true)
+                    LecturerTeacherId = table.Column<int>(type: "integer", nullable: false),
+                    PracticeTeacherId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Subjects", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Subjects_Groups_GroupId",
-                        column: x => x.GroupId,
-                        principalTable: "Groups",
-                        principalColumn: "Id");
+                        name: "FK_Subjects_Teachers_LecturerTeacherId",
+                        column: x => x.LecturerTeacherId,
+                        principalTable: "Teachers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Subjects_Teachers_PracticeTeacherId",
+                        column: x => x.PracticeTeacherId,
+                        principalTable: "Teachers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Teachers",
+                name: "Grades",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    SubjectId = table.Column<int>(type: "integer", nullable: true)
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Value = table.Column<short>(type: "smallint", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    StudentId = table.Column<int>(type: "integer", nullable: false),
+                    SubjectId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Teachers", x => x.Id);
+                    table.PrimaryKey("PK_Grades", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Teachers_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
+                        name: "FK_Grades_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Teachers_Subjects_SubjectId",
+                        name: "FK_Grades_Subjects_SubjectId",
                         column: x => x.SubjectId,
                         principalTable: "Subjects",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GroupSubject",
+                columns: table => new
+                {
+                    GroupsId = table.Column<int>(type: "integer", nullable: false),
+                    SubjectsId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GroupSubject", x => new { x.GroupsId, x.SubjectsId });
+                    table.ForeignKey(
+                        name: "FK_GroupSubject_Groups_GroupsId",
+                        column: x => x.GroupsId,
+                        principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GroupSubject_Subjects_SubjectsId",
+                        column: x => x.SubjectsId,
+                        principalTable: "Subjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GroupSubjects",
+                columns: table => new
+                {
+                    GroupId = table.Column<int>(type: "integer", nullable: false),
+                    SubjectId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GroupSubjects", x => new { x.GroupId, x.SubjectId });
+                    table.ForeignKey(
+                        name: "FK_GroupSubjects_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GroupSubjects_Subjects_SubjectId",
+                        column: x => x.SubjectId,
+                        principalTable: "Subjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SubjectTeachers",
+                columns: table => new
+                {
+                    SubjectId = table.Column<int>(type: "integer", nullable: false),
+                    TeacherId = table.Column<int>(type: "integer", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SubjectTeachers", x => new { x.SubjectId, x.TeacherId });
+                    table.ForeignKey(
+                        name: "FK_SubjectTeachers_Subjects_SubjectId",
+                        column: x => x.SubjectId,
+                        principalTable: "Subjects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SubjectTeachers_Teachers_TeacherId",
+                        column: x => x.TeacherId,
+                        principalTable: "Teachers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -311,9 +396,14 @@ namespace GradeCom.Migrations
                 column: "SubjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Groups_TeacherId",
-                table: "Groups",
-                column: "TeacherId");
+                name: "IX_GroupSubject_SubjectsId",
+                table: "GroupSubject",
+                column: "SubjectsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GroupSubjects_SubjectId",
+                table: "GroupSubjects",
+                column: "SubjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Students_GroupId",
@@ -326,55 +416,29 @@ namespace GradeCom.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Subjects_GroupId",
+                name: "IX_Subjects_LecturerTeacherId",
                 table: "Subjects",
-                column: "GroupId");
+                column: "LecturerTeacherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Teachers_SubjectId",
-                table: "Teachers",
-                column: "SubjectId");
+                name: "IX_Subjects_PracticeTeacherId",
+                table: "Subjects",
+                column: "PracticeTeacherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SubjectTeachers_TeacherId",
+                table: "SubjectTeachers",
+                column: "TeacherId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Teachers_UserId",
                 table: "Teachers",
                 column: "UserId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Grades_Students_StudentId",
-                table: "Grades",
-                column: "StudentId",
-                principalTable: "Students",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Grades_Subjects_SubjectId",
-                table: "Grades",
-                column: "SubjectId",
-                principalTable: "Subjects",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Groups_Teachers_TeacherId",
-                table: "Groups",
-                column: "TeacherId",
-                principalTable: "Teachers",
-                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teachers_AspNetUsers_UserId",
-                table: "Teachers");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Teachers_Subjects_SubjectId",
-                table: "Teachers");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -394,13 +458,19 @@ namespace GradeCom.Migrations
                 name: "Grades");
 
             migrationBuilder.DropTable(
+                name: "GroupSubject");
+
+            migrationBuilder.DropTable(
+                name: "GroupSubjects");
+
+            migrationBuilder.DropTable(
+                name: "SubjectTeachers");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Students");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Subjects");
@@ -410,6 +480,9 @@ namespace GradeCom.Migrations
 
             migrationBuilder.DropTable(
                 name: "Teachers");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

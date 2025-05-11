@@ -12,6 +12,8 @@ public class GrateContext : IdentityDbContext<User, Role, string>
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<Group> Groups { get; set; }
     public DbSet<Subject> Subjects { get; set; }
+    public DbSet<GroupSubject> GroupSubjects { get; set; }
+    public DbSet<SubjectTeacher> SubjectTeachers { get; set; }
     
     public GrateContext(DbContextOptions<GrateContext> options)
         : base(options)
@@ -23,15 +25,14 @@ public class GrateContext : IdentityDbContext<User, Role, string>
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Student>()
-            .HasOne(s => s.Group)
-            .WithMany(g => g.Students)
-            .HasForeignKey(s => s.GroupId)
-            .OnDelete(DeleteBehavior.Cascade); // delete everything
-        
-        modelBuilder.Entity<Grade>()
-            .HasOne(g => g.Subject)
-            .WithMany(s => s.Grades)
-            .HasForeignKey(g => g.SubjectId);
+        modelBuilder.Entity<GroupSubject>()
+            .HasKey(gs => new { gs.GroupId, gs.SubjectId });
+
+        modelBuilder.Entity<SubjectTeacher>()
+            .HasKey(st => new { st.SubjectId, st.TeacherId });
+
+        modelBuilder.Entity<SubjectTeacher>()
+            .Property(st => st.Role)
+            .HasConversion<string>();
     }
 }

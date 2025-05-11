@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System.Collections;
+using System.Net;
 using GradeCom.Context;
+using GradeCom.Dtos.Group;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Exceptions;
 using GradeCom.Models;
@@ -115,13 +117,53 @@ public class UserService : IUserService
     }
     
     
-    public async Task CreateGroup(Group group)
+    public async Task CreateGroup(GroupCreateDto groupDto)
     {
-        if (group is null)
+        if (groupDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
                 "Вы неверно ввели данные");
+        var group = new Group
+        {
+            Name = groupDto.Name
+        };
         _dbContext.Groups.Add(group);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task AddStudentToGroup(AssignStudentsToGroupDto dto)
+    {
+        var group = await _dbContext.Groups.FindAsync(dto.GroupId);
+        if (group == null)
+            throw new Exception("Group not found");
+        
+        var students = await _dbContext.Students
+            .Where(s => dto.StudentIds.Contains(s.Id) && (s.GroupId == null || s.GroupId != dto.GroupId))
+            .ToListAsync();
+
+        foreach (var student in students)
+        {
+            student.GroupId = dto.GroupId;
+        }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteStudentFromGroup(AssignStudentsToGroupDto dto)
+    {
+        var group = await _dbContext.Groups.FindAsync(dto.GroupId);
+        if (group == null)
+            throw new Exception("Group not found");
+        
+        var students = await _dbContext.Students
+            .Where(s => dto.StudentIds.Contains(s.Id) && (s.GroupId == dto.GroupId))
+            .ToListAsync();
+
+        foreach (var student in students)
+        {
+            student.GroupId = null;
+        }
+
+        await _dbContext.SaveChangesAsync();    
     }
 
 
