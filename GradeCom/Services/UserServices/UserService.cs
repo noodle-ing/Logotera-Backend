@@ -2,6 +2,7 @@
 using System.Net;
 using GradeCom.Context;
 using GradeCom.Dtos.Group;
+using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Exceptions;
 using GradeCom.Models;
@@ -164,6 +165,19 @@ public class UserService : IUserService
         }
 
         await _dbContext.SaveChangesAsync();    
+    }
+
+    public async Task CreateSubject(SubjectCreateDto dto)
+    {
+        if (dto is null)
+            throw new HttpException(StatusCodes.Status400BadRequest,
+                "Вы неверно ввели данные");
+        var subject = new Subject
+        {
+            Name = dto.SubjectName
+        };
+        _dbContext.Subjects.Add(subject);
+        await _dbContext.SaveChangesAsync();
     }
 
 

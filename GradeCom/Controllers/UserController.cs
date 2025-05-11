@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GradeCom.Dtos.Group;
+using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
 using GradeCom.Services.UserServices;
@@ -103,7 +104,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> CreateGroup([FromBody] GroupCreateDto dto)
     {
         await _userService.CreateGroup(dto);
-        return Ok(new { message = "Группа успешно создана" });
+        return Ok(new { message = "Group created successfully" });
     }
     
     // [Authorize]
@@ -112,7 +113,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> AddStudentToGroup([FromBody] AssignStudentsToGroupDto dto)
     {
         await _userService.AddStudentToGroup(dto);
-        return Ok(new { message = "Студенты успешно добавлены" });
+        return Ok(new { message = "Students added successfully" });
     }
     
     // [Authorize]
@@ -121,12 +122,19 @@ public class UserController : ControllerBase
     public async Task<IActionResult> DeleteStudentFromGroup([FromBody] AssignStudentsToGroupDto dto)
     {
         await _userService.DeleteStudentFromGroup(dto);
-        return Ok(new { message = "Студенты успешно удалены" });
+        return Ok(new { message = "Students deleted successfully" });
     }
     
     
-    
-    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpPost("subject")]
+    public async Task<IActionResult> CreateSubject([FromBody] SubjectCreateDto dto)
+    {
+        await _userService.CreateSubject(dto);
+        return Ok(new { message = "Subject created successfully" });
+    }
+
     
     // [HttpPut("upload-image/{id}")]
     // public async Task<IActionResult> UploadProfileImage(string id, IFormFile file)

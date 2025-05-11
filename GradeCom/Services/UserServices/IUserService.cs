@@ -1,4 +1,5 @@
 ﻿using GradeCom.Dtos.Group;
+using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
 
@@ -15,4 +16,6 @@ public interface IUserService
     Task CreateGroup(GroupCreateDto group);
     Task AddStudentToGroup(AssignStudentsToGroupDto dto);
     Task DeleteStudentFromGroup(AssignStudentsToGroupDto dto);
+    Task CreateSubject(SubjectCreateDto dto);
+
 }
