@@ -34,5 +34,9 @@ public class GrateContext : IdentityDbContext<User, Role, string>
         modelBuilder.Entity<SubjectTeacher>()
             .Property(st => st.Role)
             .HasConversion<string>();
+        modelBuilder.Entity<Group>()
+            .HasMany(g => g.Subjects)
+            .WithMany(s => s.Groups)
+            .UsingEntity(j => j.ToTable("GroupSubjects"));
     }
 }
