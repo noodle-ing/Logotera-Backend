@@ -143,6 +143,27 @@ public class UserController : ControllerBase
         await _userService.AddTeacherToSubject(dto);
         return Ok(new { message = "Teacher add successfully" });
     }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpPost("subject/addGroup")]
+    public async Task<IActionResult> AddGroupToSubject([FromBody] GroupAddToSubjectDto toSubjectDto)
+    {
+        await _userService.AddGroupToSubject(toSubjectDto);
+        return Ok(new { message = "Group add successfully" });
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpDelete("subject/deleteTeacher")]
+    public async Task<IActionResult> DeleteTeacherFromSubject([FromBody] TeacherAddDto dto)
+    {
+        await _userService.DeleteTeacherFromSubject(dto);
+        return Ok(new { message = "Teacher deleted successfully" });
+    }
+
+    
+    
 
     
     // [HttpPut("upload-image/{id}")]

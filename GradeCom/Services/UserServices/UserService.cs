@@ -206,6 +206,47 @@ public class UserService : IUserService
         
     }
 
+    public async Task AddGroupToSubject(GroupAddToSubjectDto toSubjectDto)
+    {
+        var subject = await _dbContext.Subjects
+            .Include(s => s.Groups)
+            .FirstOrDefaultAsync(s => s.Id == toSubjectDto.SubjectId);
+
+        var group = await _dbContext.Groups.FindAsync(toSubjectDto.GroupId);
+
+        if (group == null || subject == null)
+            throw new Exception("Group or Subject not found");
+
+        if (!subject.Groups.Contains(group))
+            subject.Groups.Add(group);
+        
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteTeacherFromSubject(TeacherAddDto teacherDto)
+    {
+        if (teacherDto is null)
+            throw new HttpException(StatusCodes.Status400BadRequest, "You enter invalid teacher");
+        
+        var teacher = await _dbContext.Teachers.FindAsync(teacherDto.TeacherId);
+        if (teacher == null)
+            throw new HttpException(StatusCodes.Status404NotFound, "Teacher not found");
+        var subject = await _dbContext.Subjects.FindAsync(teacherDto.SubjectId);
+        if (subject is null)
+            throw new HttpException(StatusCodes.Status400BadRequest, "Subject not found");
+        switch (teacherDto.SubjectRole)
+        {
+            case SubjectRoleType.Lecturer:
+                subject.LecturerTeacherId = null;
+                break;
+            case SubjectRoleType.Practitioner:
+                subject.PracticeTeacherId = null;
+                break;
+        }
+       
+        await _dbContext.SaveChangesAsync();
+    }
+
 
     public async Task Put(string id, IFormFile file)
     {
