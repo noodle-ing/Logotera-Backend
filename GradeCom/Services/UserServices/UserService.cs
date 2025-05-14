@@ -264,6 +264,15 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
 
+    public Task DeleteSubject(int subjectId)
+    {
+        var subject = _dbContext.Subjects.Find(subjectId);
+        if (subject == null)
+            throw new Exception("Subject not found");
+        _dbContext.Subjects.Remove(subject);
+        return _dbContext.SaveChangesAsync();
+    }
+
 
     public async Task Put(string id, IFormFile file)
     {

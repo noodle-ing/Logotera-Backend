@@ -170,6 +170,15 @@ public class UserController : ControllerBase
         await _userService.DeleteGroupFromSubject(toSubjectDto);
         return Ok(new { message = "Group deleted successfully" });
     }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpDelete("subject/delete")]
+    public async Task<IActionResult> DeleteSubject(int subjectId)
+    {
+        await _userService.DeleteSubject(subjectId);
+        return Ok(new { message = "Group deleted successfully" });
+    }
 
     
     
