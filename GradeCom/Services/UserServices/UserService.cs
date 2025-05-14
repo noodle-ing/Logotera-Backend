@@ -273,6 +273,15 @@ public class UserService : IUserService
         return _dbContext.SaveChangesAsync();
     }
 
+    public Task DeleteGroup(int groupId)
+    {
+        var group = _dbContext.Groups.Find(groupId);
+        if (group == null)
+            throw new Exception("Group not found");
+        _dbContext.Groups.Remove(group);
+        return _dbContext.SaveChangesAsync();
+    }
+
 
     public async Task Put(string id, IFormFile file)
     {

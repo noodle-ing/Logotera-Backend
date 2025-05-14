@@ -22,5 +22,6 @@ public interface IUserService
     Task DeleteTeacherFromSubject(TeacherAddDto toSubjectDto);
     Task DeleteGroupFromSubject(GroupAddToSubjectDto toSubjectDto);
     Task DeleteSubject(int subjectId);
+    Task DeleteGroup(int groupId);
 
 }
