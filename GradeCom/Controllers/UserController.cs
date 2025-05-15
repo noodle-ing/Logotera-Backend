@@ -173,7 +173,7 @@ public class UserController : ControllerBase
     
     // [Authorize]
     // [Authorize(Policy = "Admin")]
-    [HttpDelete("subject/delete")]
+    [HttpDelete("subject/delete{subjectId}")]
     public async Task<IActionResult> DeleteSubject(int subjectId)
     {
         await _userService.DeleteSubject(subjectId);
@@ -187,6 +187,33 @@ public class UserController : ControllerBase
     {
         await _userService.DeleteGroup(groupId);
         return Ok(new { message = "Group deleted successfully" });
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpGet("subject/list")]
+    public async Task<IActionResult> AllSubjects()
+    {
+        var allSubjects = await _userService.GetAllSubjects();
+        return Ok(allSubjects);
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpGet("subject/list/teachers")]
+    public async Task<IActionResult> AllTeachers()
+    {
+        var allTeachers = await _userService.GetAllTeachers();
+        return Ok(allTeachers);
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Admin")]
+    [HttpGet("subject/list/groups")]
+    public async Task<IActionResult> AllGroups()
+    {
+        var allGroups = await _userService.GetAllGroups();
+        return Ok(allGroups);
     }
 
     

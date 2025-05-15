@@ -3,6 +3,7 @@ using System.Net;
 using GradeCom.Context;
 using GradeCom.Dtos.Group;
 using GradeCom.Dtos.Subject;
+using GradeCom.Dtos.Teacher;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Enum;
 using GradeCom.Exceptions;
@@ -185,8 +186,11 @@ public class UserService : IUserService
     {
         if (teacherDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest, "You enter invalid teacher");
+
+        var teacher = await _dbContext.Teachers
+            .Where(t => t.UserId == teacherDto.UserId)
+            .FirstAsync();
         
-        var teacher = await _dbContext.Teachers.FindAsync(teacherDto.TeacherId);
         if (teacher == null)
             throw new HttpException(StatusCodes.Status404NotFound, "Teacher not found");
         var subject = await _dbContext.Subjects.FindAsync(teacherDto.SubjectId);
@@ -228,7 +232,9 @@ public class UserService : IUserService
         if (teacherDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest, "You enter invalid teacher");
         
-        var teacher = await _dbContext.Teachers.FindAsync(teacherDto.TeacherId);
+        var teacher = await _dbContext.Teachers
+            .Where(t => t.UserId == teacherDto.UserId)
+            .FirstAsync();
         if (teacher == null)
             throw new HttpException(StatusCodes.Status404NotFound, "Teacher not found");
         var subject = await _dbContext.Subjects.FindAsync(teacherDto.SubjectId);
@@ -280,6 +286,57 @@ public class UserService : IUserService
             throw new Exception("Group not found");
         _dbContext.Groups.Remove(group);
         return _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<List<SubjectShowDto>> GetAllSubjects()
+    {
+        var subjects = await _dbContext.Subjects
+            .Include(s => s.LecturerTeacher)
+            .ThenInclude(t => t.User)
+            .Include(s => s.PracticeTeacher)
+            .ThenInclude(t => t.User)
+            .Include(s => s.Groups) 
+            .ToListAsync();
+
+        return subjects.Select(s => new SubjectShowDto
+        {
+            Id = s.Id,
+            Name = s.Name,
+            LecturerTeacher = s.LecturerTeacher == null ? null : new TeacherDto
+            {
+                Id = s.LecturerTeacher.Id,
+                FirstName = s.LecturerTeacher.User.UserName,
+                LastName = s.LecturerTeacher.User.Surname
+            },
+            PracticeTeacher = s.PracticeTeacher == null ? null : new TeacherDto
+            {
+                Id = s.PracticeTeacher.Id,
+                FirstName = s.PracticeTeacher.User.UserName,
+                LastName = s.PracticeTeacher.User.Surname
+            },
+            Groups = s.Groups?.Select(g => new GroupCreateDto
+            {
+                Name = g.Name
+            }).ToList() ?? new List<GroupCreateDto>()
+        }).ToList();
+    }
+
+    public async Task<List<User>> GetAllTeachers()
+    {
+        var teachers =  await _dbContext.Teachers
+            .ToListAsync();
+        List<User> teacherUsers = new List<User>();
+        foreach (var teacher in teachers)
+        {
+            teacherUsers.Add(await _dbContext.Users.FindAsync(teacher.UserId));
+        }
+        return teacherUsers;
+    }
+
+    public async Task<List<Group>> GetAllGroups()
+    {
+        return await _dbContext.Groups
+            .ToListAsync();    
     }
 
 

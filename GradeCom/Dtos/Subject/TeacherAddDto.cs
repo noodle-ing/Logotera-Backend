@@ -5,7 +5,7 @@ namespace GradeCom.Dtos.Subject;
 
 public class TeacherAddDto
 {
-    public int TeacherId { get; set; }
+    public string UserId { get; set; }
     public int SubjectId { get; set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public SubjectRoleType SubjectRole { get; set; }
