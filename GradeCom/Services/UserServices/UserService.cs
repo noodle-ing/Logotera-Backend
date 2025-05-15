@@ -304,13 +304,11 @@ public class UserService : IUserService
             Name = s.Name,
             LecturerTeacher = s.LecturerTeacher == null ? null : new TeacherDto
             {
-                Id = s.LecturerTeacher.Id,
                 FirstName = s.LecturerTeacher.User.UserName,
                 LastName = s.LecturerTeacher.User.Surname
             },
             PracticeTeacher = s.PracticeTeacher == null ? null : new TeacherDto
             {
-                Id = s.PracticeTeacher.Id,
                 FirstName = s.PracticeTeacher.User.UserName,
                 LastName = s.PracticeTeacher.User.Surname
             },
