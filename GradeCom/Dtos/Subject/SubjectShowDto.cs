@@ -9,6 +9,6 @@ public class SubjectShowDto
     public string Name { get; set; }
     public TeacherDto? LecturerTeacher { get; set; }
     public TeacherDto? PracticeTeacher { get; set; }
-    public List<GroupCreateDto> Groups { get; set; } = new();
+    public List<GroupViewDto> Groups { get; set; } = new();
 
 }

@@ -34,5 +34,13 @@ public class GrateContext : IdentityDbContext<User, Role, string>
         modelBuilder.Entity<SubjectTeacher>()
             .Property(st => st.Role)
             .HasConversion<string>();
+        
+        modelBuilder.Entity<Student>()
+            .HasOne(s => s.Group)
+            .WithMany(g => g.Students)
+            .HasForeignKey(s => s.GroupId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        base.OnModelCreating(modelBuilder);
     }
 }

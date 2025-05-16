@@ -1,4 +1,5 @@
 ﻿using GradeCom.Dtos.Group;
+using GradeCom.Dtos.StudentDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
@@ -19,13 +20,14 @@ public interface IUserService
     Task CreateSubject(SubjectCreateDto dto);
     Task AddTeacherToSubject(TeacherAddDto dto);
     Task AddGroupToSubject(GroupAddToSubjectDto toSubjectDto);
-    Task DeleteTeacherFromSubject(TeacherAddDto toSubjectDto);
+    Task DeleteTeacherFromSubject(TeacherDeleteFromSubjectDto toSubjectDto);
     Task DeleteGroupFromSubject(GroupAddToSubjectDto toSubjectDto);
     Task DeleteSubject(int subjectId);
     Task DeleteGroup(int groupId);
     Task<List<SubjectShowDto>> GetAllSubjects();
     Task<List<User>> GetAllTeachers();
-    Task<List<Group>> GetAllGroups();
+    Task<List<StudentUserDto>> GetAllStudent();
+    Task<List<GroupWithStudentDto>> GetAllGroups();
 
 
 }

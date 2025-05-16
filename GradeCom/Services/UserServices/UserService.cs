@@ -2,6 +2,7 @@
 using System.Net;
 using GradeCom.Context;
 using GradeCom.Dtos.Group;
+using GradeCom.Dtos.StudentDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.Teacher;
 using GradeCom.Dtos.UserDtos;
@@ -227,13 +228,13 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteTeacherFromSubject(TeacherAddDto teacherDto)
+    public async Task DeleteTeacherFromSubject(TeacherDeleteFromSubjectDto teacherDto)
     {
         if (teacherDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest, "You enter invalid teacher");
         
         var teacher = await _dbContext.Teachers
-            .Where(t => t.UserId == teacherDto.UserId)
+            .Where(t =>  t.Id == teacherDto.TeacherId)
             .FirstAsync();
         if (teacher == null)
             throw new HttpException(StatusCodes.Status404NotFound, "Teacher not found");
@@ -263,9 +264,8 @@ public class UserService : IUserService
 
         if (group == null || subject == null)
             throw new Exception("Group or Subject not found");
-
-        if (!subject.Groups.Contains(group))
-            subject.Groups.Remove(group);
+        
+        subject.Groups.Remove(group);
         
         await _dbContext.SaveChangesAsync();
     }
@@ -304,18 +304,21 @@ public class UserService : IUserService
             Name = s.Name,
             LecturerTeacher = s.LecturerTeacher == null ? null : new TeacherDto
             {
+                Id = s.LecturerTeacher.Id,
                 FirstName = s.LecturerTeacher.User.UserName,
                 LastName = s.LecturerTeacher.User.Surname
             },
             PracticeTeacher = s.PracticeTeacher == null ? null : new TeacherDto
             {
+                Id = s.PracticeTeacher.Id,
                 FirstName = s.PracticeTeacher.User.UserName,
                 LastName = s.PracticeTeacher.User.Surname
             },
-            Groups = s.Groups?.Select(g => new GroupCreateDto
+            Groups = s.Groups?.Select(g => new GroupViewDto
             {
+                Id = g.Id,
                 Name = g.Name
-            }).ToList() ?? new List<GroupCreateDto>()
+            }).ToList() ?? new List<GroupViewDto>()
         }).ToList();
     }
 
@@ -331,10 +334,45 @@ public class UserService : IUserService
         return teacherUsers;
     }
 
-    public async Task<List<Group>> GetAllGroups()
+    public async Task<List<StudentUserDto>> GetAllStudent()
     {
-        return await _dbContext.Groups
-            .ToListAsync();    
+        var students = await _dbContext.Students
+            .Include(s => s.User)
+            .ToListAsync();
+
+        var result = students.Select(s => new StudentUserDto
+        {
+            StudentId = s.Id,
+            Name = s.User.UserName,    
+            Surname = s.User.Surname
+        }).ToList();
+
+        return result;
+    }
+
+
+    public async Task<List<GroupWithStudentDto>> GetAllGroups()
+    {
+        var groups = await _dbContext.Groups
+            .Include(g => g.Students)
+            .ThenInclude(s => s.User)
+            .ToListAsync();
+
+        var result = groups.Select(g => new GroupWithStudentDto
+        {
+            Id = g.Id,
+            Name = g.Name,
+            Students = g.Students != null
+                ? g.Students.Select(s => new StudentUserDto
+                {
+                    StudentId = s.Id,
+                    Name = s.User.UserName,  
+                    Surname = s.User.Surname
+                }).ToList()
+                : new List<StudentUserDto>()
+        }).ToList();
+
+        return result; 
     }
 
 
