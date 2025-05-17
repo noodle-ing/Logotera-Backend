@@ -226,6 +226,32 @@ public class UserController : ControllerBase
         return Ok(allStudents);
     }
     
+    // [Authorize]
+    // [Authorize(Policy = "Teacher")]
+
+    [HttpGet("teacher/subjectList")]
+    public async Task<IActionResult> GetAllTeacherSubject()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (email == null)
+            return Unauthorized();
+
+        List<Subject> subjects = await _userService.GetAllTeacherSubject(email);
+        return Ok(subjects);
+    }
+    
+    // [Authorize]
+    // [Authorize(Policy = "Teacher")]
+    [HttpGet("teacher/subject")]
+    public async Task<IActionResult> GetSubjectTeacher(int subjectId)
+    {
+        
+        SubjectShowDto subject = await _userService.GetSubjectForTeacher(subjectId);
+        return Ok(subject);
+    }
+    
+    
     
 
     

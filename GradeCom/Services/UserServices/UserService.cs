@@ -375,6 +375,59 @@ public class UserService : IUserService
         return result; 
     }
 
+    public async Task<List<Subject>> GetAllTeacherSubject(string email)
+    {
+        User userTeacher = await _dbContext.Users
+            .Where(u => u.Email == email)
+            .FirstOrDefaultAsync();
+        Teacher teacher  =await _dbContext.Teachers
+            .Where(t => t.UserId == userTeacher.Id)
+            .FirstOrDefaultAsync();
+        if (teacher == null)
+            throw new Exception("Teacher not found");
+        var subjects = await _dbContext.Subjects
+            .Where(s => s.PracticeTeacherId == teacher.Id || s.LecturerTeacherId == teacher.Id)
+            .ToListAsync();
+        return subjects;
+    }
+
+    public async Task<SubjectShowDto> GetSubjectForTeacher(int subjectId)
+    {
+        var subject = await _dbContext.Subjects
+            .Include(s => s.LecturerTeacher)
+            .ThenInclude(t => t.User)
+            .Include(s => s.PracticeTeacher)
+            .ThenInclude(t => t.User)
+            .Include(s => s.Groups)
+            .FirstOrDefaultAsync(s => s.Id == subjectId);
+
+        if (subject == null)
+            throw new Exception("Subject not found");
+
+        return new SubjectShowDto
+        {
+            Id = subject.Id,
+            Name = subject.Name,
+            LecturerTeacher = subject.LecturerTeacher == null ? null : new TeacherDto
+            {
+                Id = subject.LecturerTeacher.Id,
+                FirstName = subject.LecturerTeacher.User.UserName,
+                LastName = subject.LecturerTeacher.User.Surname
+            },
+            PracticeTeacher = subject.PracticeTeacher == null ? null : new TeacherDto
+            {
+                Id = subject.PracticeTeacher.Id,
+                FirstName = subject.PracticeTeacher.User.UserName,
+                LastName = subject.PracticeTeacher.User.Surname
+            },
+            Groups = subject.Groups?.Select(g => new GroupViewDto
+            {
+                Id = g.Id,
+                Name = g.Name
+            }).ToList() ?? new List<GroupViewDto>()
+        };
+    }
+
 
     public async Task Put(string id, IFormFile file)
     {

@@ -13,4 +13,6 @@ public class Subject
     public Teacher? LecturerTeacher { get; set; }
     public Teacher? PracticeTeacher { get; set; }
     public List<Grade>? Grades { get; set; }
+    public List<Module>? Modules { get; set; }
+    public string? SyllabusFilePath  { get; set; }
 }

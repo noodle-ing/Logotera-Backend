@@ -1,4 +1,5 @@
 ﻿using GradeCom.Models;
+using GradeCom.Models.Files;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,11 @@ public class GrateContext : IdentityDbContext<User, Role, string>
     public DbSet<Subject> Subjects { get; set; }
     public DbSet<GroupSubject> GroupSubjects { get; set; }
     public DbSet<SubjectTeacher> SubjectTeachers { get; set; }
+    public DbSet<LectureFile> LectureFiles { get; set; }
+    public DbSet<SeminarFile> SeminarFiles { get; set; }
+    public DbSet<PracticeFile> PracticeFiles { get; set; }
+    public DbSet<HomeTaskFile> HomeTaskFiles { get; set; }
+    public DbSet<Module> Modules { get; set; }
     
     public GrateContext(DbContextOptions<GrateContext> options)
         : base(options)
@@ -42,5 +48,29 @@ public class GrateContext : IdentityDbContext<User, Role, string>
             .OnDelete(DeleteBehavior.SetNull);
 
         base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<LectureFile>()
+            .HasOne(f => f.Module)
+            .WithMany(t => t.LectureFiles)
+            .HasForeignKey(f => f.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SeminarFile>()
+            .HasOne(f => f.Module)
+            .WithMany(t => t.SeminarFiles)
+            .HasForeignKey(f => f.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PracticeFile>()
+            .HasOne(f => f.Module)
+            .WithMany(t => t.PracticeFiles)
+            .HasForeignKey(f => f.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<HomeTaskFile>()
+            .HasOne(f => f.Module)
+            .WithMany(t => t.HomeTaskFiles)
+            .HasForeignKey(f => f.ModuleId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

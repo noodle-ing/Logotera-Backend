@@ -28,6 +28,9 @@ public interface IUserService
     Task<List<User>> GetAllTeachers();
     Task<List<StudentUserDto>> GetAllStudent();
     Task<List<GroupWithStudentDto>> GetAllGroups();
+    Task<List<Subject>> GetAllTeacherSubject(string email);
+    Task<SubjectShowDto> GetSubjectForTeacher(int subjectId);
+    
 
 
 }
