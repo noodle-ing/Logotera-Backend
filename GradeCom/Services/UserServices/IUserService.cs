@@ -35,6 +35,8 @@ public interface IUserService
     Task AddSyllabus(int subjectId, IFormFile file);
     Task<FileDownloadInfo> GetSyllabus(int subjectId);
     Task CreateModule(CreateModuleDto module);
+    Task DeleteModule(int moduleId);
+    Task EditModule(ModuleViewDto moduleDto);
 
 
 

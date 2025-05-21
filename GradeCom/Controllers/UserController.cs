@@ -284,6 +284,24 @@ public class UserController : ControllerBase
         await _userService.CreateModule(module);
         return Ok(new { message = "Module created successfully" });
     }
+    
+    [HttpDelete("teacher/deletemodule")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> DeleteModule(int moduleId)
+    {
+        await _userService.DeleteModule(moduleId);
+        return Ok(new { message = "Module deleted successfully" });
+    }
+    
+    [HttpPut("teacher/editmodule")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> EditModule([FromBody] ModuleViewDto module)
+    {
+        await _userService.EditModule(module);
+        return Ok(new { message = "Module edited successfully" });
+    }
+    
+    
 
 
 

@@ -499,6 +499,22 @@ public class UserService : IUserService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task DeleteModule(int moduleId)
+    {
+        Module module = await _dbContext.Modules.FindAsync(moduleId);
+        _dbContext.Modules.Remove(module);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task EditModule(ModuleViewDto moduleDto)
+    {
+        Module module = await _dbContext.Modules.FindAsync(moduleDto.Id);
+        module.Title = moduleDto.Title;
+        module.Description = moduleDto.Description;
+        await _dbContext.SaveChangesAsync();
+    }
+
+
     // public async Task Put(string id, IFormFile file)
     // {
     //     var user = await _dbContext.Users.FindAsync(id);
