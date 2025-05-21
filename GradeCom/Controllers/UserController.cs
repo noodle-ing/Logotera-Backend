@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GradeCom.Dtos.Group;
+using GradeCom.Dtos.ModuleDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
@@ -250,11 +251,44 @@ public class UserController : ControllerBase
         SubjectShowDto subject = await _userService.GetSubjectForTeacher(subjectId);
         return Ok(subject);
     }
-    
-    
-    
 
+    [HttpPost("teacher/upload-syllabus")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> UploadSyllabus([FromQuery] int subjectId, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+        await _userService.AddSyllabus(subjectId, file);
+        return Ok(new { message = "Syllabus uploaded successfully." });
+    }
     
+    [HttpGet("user/download-syllabus")]
+    [Authorize(Roles = "Teacher,Student")]
+    public async Task<IActionResult> DownloadSyllabus([FromQuery] int subjectId)
+    {
+        try
+        {
+            var fileInfo = await _userService.GetSyllabus(subjectId);
+            return PhysicalFile(fileInfo.FilePath, fileInfo.ContentType, fileInfo.FileName);
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+    
+    [HttpPost("teacher/createmodule")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> CreateModule([FromBody] CreateModuleDto module)
+    {
+        await _userService.CreateModule(module);
+        return Ok(new { message = "Module created successfully" });
+    }
+
+
+
+
+
     // [HttpPut("upload-image/{id}")]
     // public async Task<IActionResult> UploadProfileImage(string id, IFormFile file)
     // {

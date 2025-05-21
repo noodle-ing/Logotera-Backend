@@ -1,4 +1,6 @@
-﻿using GradeCom.Dtos.Group;
+﻿using GradeCom.Dtos.File;
+using GradeCom.Dtos.Group;
+using GradeCom.Dtos.ModuleDto;
 using GradeCom.Dtos.StudentDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
@@ -30,7 +32,10 @@ public interface IUserService
     Task<List<GroupWithStudentDto>> GetAllGroups();
     Task<List<Subject>> GetAllTeacherSubject(string email);
     Task<SubjectShowDto> GetSubjectForTeacher(int subjectId);
-    
+    Task AddSyllabus(int subjectId, IFormFile file);
+    Task<FileDownloadInfo> GetSyllabus(int subjectId);
+    Task CreateModule(CreateModuleDto module);
+
 
 
 }

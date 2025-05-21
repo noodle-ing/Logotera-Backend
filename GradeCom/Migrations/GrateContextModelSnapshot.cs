@@ -618,7 +618,7 @@ namespace GradeCom.Migrations
             modelBuilder.Entity("GradeCom.Models.Module", b =>
                 {
                     b.HasOne("GradeCom.Models.Subject", "Subject")
-                        .WithMany()
+                        .WithMany("Modules")
                         .HasForeignKey("SubjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -779,6 +779,8 @@ namespace GradeCom.Migrations
             modelBuilder.Entity("GradeCom.Models.Subject", b =>
                 {
                     b.Navigation("Grades");
+
+                    b.Navigation("Modules");
                 });
 
             modelBuilder.Entity("GradeCom.Models.Teacher", b =>

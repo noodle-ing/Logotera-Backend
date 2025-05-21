@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Net;
 using GradeCom.Context;
+using GradeCom.Dtos.File;
 using GradeCom.Dtos.Group;
+using GradeCom.Dtos.ModuleDto;
 using GradeCom.Dtos.StudentDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.Teacher;
@@ -10,6 +12,7 @@ using GradeCom.Enum;
 using GradeCom.Exceptions;
 using GradeCom.Models;
 using GradeCom.Utilits;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GradeCom.Services.UserServices;
@@ -27,7 +30,7 @@ public class UserService : IUserService
     {
         if (userDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы неверно ввели данные");
+                "You entered wrong parameters!");
 
         var user = await UserMapper.UserDtoToUserAsync(userDto);
 
@@ -35,13 +38,13 @@ public class UserService : IUserService
             user.Surname is null ||
             user.Email is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели данные неверно");
+                "You entered wrong parameters!");
 
         if (_dbContext.Users.Any(u => u.UserName == userDto.UserName
                                       || u.Surname == userDto.Surname
                                       || u.Email == userDto.Email))
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Пользователь с такими данными уже существует");
+                "User with such parameters doesn't exist!");
 
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
@@ -49,14 +52,6 @@ public class UserService : IUserService
         return UserMapper.UserUserDto(user);
     }
     
-    // public async Task<IEnumerable<UserDto>> Get(string userId)
-    // {
-    //     var users = await _dbContext.Users
-    //         .ToListAsync();
-    //     
-    //     return users.Select(UserMapper.UserUserDto);
-    // }
-
     public async Task<UserDto> Get(string email)
     {
         var user = await _dbContext.Users
@@ -64,7 +59,7 @@ public class UserService : IUserService
         
         if (user is null)
             throw new HttpException(StatusCodes.Status404NotFound,
-                "Пользователь с таким email не был найдке");
+                "User with such email doesn't found");
         
         return UserMapper.UserUserDto(user);
     }
@@ -73,20 +68,20 @@ public class UserService : IUserService
     {
         if (userDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели данные неверно");
+                "You entered wrong parameters!");
         
         var user = UserMapper.UserDtoUser(userDto);
 
         if (await _dbContext.Users.AnyAsync(u => u.Id != user.Id &&
                                                  u.Email == user.Email))
             throw new HttpException(HttpStatusCode.BadRequest,
-                $"Пользователь с email:{userDto.Email} уже существует"); 
+                $"User with such email:{userDto.Email} already exists!"); 
         
         user = await _dbContext.Users.FindAsync(userDto.Id);
 
         if (user is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели неверно данные");
+                "You entered wrong parameters!");
 
         UserMapper.UserDtoUser(userDto, user);
         
@@ -101,7 +96,7 @@ public class UserService : IUserService
         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
         if (user is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели id неверно");
+                "You entered id incorrect");
         UserMapper.UserDtoUser(user, description);
         _dbContext.Users.Update(user);
         await _dbContext.SaveChangesAsync();
@@ -114,10 +109,17 @@ public class UserService : IUserService
 
         if (user is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели id неверно");
+                "You entered id incorrect");
 
         _dbContext.Users.Remove(user);
         await _dbContext.SaveChangesAsync();
+    }
+    
+    public async Task<List<User>> GetAllUsersAsync(string email)
+    {
+        return await _dbContext.Users
+            .Where(u => u.Email != email)
+            .ToListAsync();
     }
     
     
@@ -125,13 +127,46 @@ public class UserService : IUserService
     {
         if (groupDto is null)
             throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы неверно ввели данные");
+                "You entered wrong parameters!");
         var group = new Group
         {
             Name = groupDto.Name
         };
         _dbContext.Groups.Add(group);
         await _dbContext.SaveChangesAsync();
+    }
+    
+    public Task DeleteGroup(int groupId)
+    {
+        var group = _dbContext.Groups.Find(groupId);
+        if (group == null)
+            throw new Exception("Group not found");
+        _dbContext.Groups.Remove(group);
+        return _dbContext.SaveChangesAsync();
+    }
+    
+    public async Task<List<GroupWithStudentDto>> GetAllGroups()
+    {
+        var groups = await _dbContext.Groups
+            .Include(g => g.Students)
+            .ThenInclude(s => s.User)
+            .ToListAsync();
+
+        var result = groups.Select(g => new GroupWithStudentDto
+        {
+            Id = g.Id,
+            Name = g.Name,
+            Students = g.Students != null
+                ? g.Students.Select(s => new StudentUserDto
+                {
+                    StudentId = s.Id,
+                    Name = s.User.UserName,  
+                    Surname = s.User.Surname
+                }).ToList()
+                : new List<StudentUserDto>()
+        }).ToList();
+
+        return result; 
     }
 
     public async Task AddStudentToGroup(AssignStudentsToGroupDto groupDto)
@@ -279,14 +314,7 @@ public class UserService : IUserService
         return _dbContext.SaveChangesAsync();
     }
 
-    public Task DeleteGroup(int groupId)
-    {
-        var group = _dbContext.Groups.Find(groupId);
-        if (group == null)
-            throw new Exception("Group not found");
-        _dbContext.Groups.Remove(group);
-        return _dbContext.SaveChangesAsync();
-    }
+  
 
     public async Task<List<SubjectShowDto>> GetAllSubjects()
     {
@@ -351,29 +379,7 @@ public class UserService : IUserService
     }
 
 
-    public async Task<List<GroupWithStudentDto>> GetAllGroups()
-    {
-        var groups = await _dbContext.Groups
-            .Include(g => g.Students)
-            .ThenInclude(s => s.User)
-            .ToListAsync();
-
-        var result = groups.Select(g => new GroupWithStudentDto
-        {
-            Id = g.Id,
-            Name = g.Name,
-            Students = g.Students != null
-                ? g.Students.Select(s => new StudentUserDto
-                {
-                    StudentId = s.Id,
-                    Name = s.User.UserName,  
-                    Surname = s.User.Surname
-                }).ToList()
-                : new List<StudentUserDto>()
-        }).ToList();
-
-        return result; 
-    }
+ 
 
     public async Task<List<Subject>> GetAllTeacherSubject(string email)
     {
@@ -399,6 +405,7 @@ public class UserService : IUserService
             .Include(s => s.PracticeTeacher)
             .ThenInclude(t => t.User)
             .Include(s => s.Groups)
+            .Include(s => s.Modules) 
             .FirstOrDefaultAsync(s => s.Id == subjectId);
 
         if (subject == null)
@@ -408,6 +415,7 @@ public class UserService : IUserService
         {
             Id = subject.Id,
             Name = subject.Name,
+            SyllabusFilePath = subject.SyllabusFilePath,
             LecturerTeacher = subject.LecturerTeacher == null ? null : new TeacherDto
             {
                 Id = subject.LecturerTeacher.Id,
@@ -424,34 +432,89 @@ public class UserService : IUserService
             {
                 Id = g.Id,
                 Name = g.Name
-            }).ToList() ?? new List<GroupViewDto>()
+            }).ToList() ?? new List<GroupViewDto>(),
+            Modules = subject.Modules?.Select(m => new ModuleViewDto
+            {
+                Id = m.Id,
+                Title = m.Title,
+                Description = m.Description
+            }).ToList() ?? new List<ModuleViewDto>()
         };
     }
 
-
-    public async Task Put(string id, IFormFile file)
+    public async Task AddSyllabus(int subjectId, IFormFile file)
     {
-        var user = await _dbContext.Users.FindAsync(id);
-        if (user == null)
-            throw new HttpException(StatusCodes.Status400BadRequest,
-                "Вы ввели id неверно");
+        var subject = await _dbContext.Subjects.FindAsync(subjectId);
+        if (subject == null)
+            throw new Exception("Subject not found");
 
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        var filePath = Path.Combine("wwwroot/images", fileName);
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "UploadedSyllabi");
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
 
-        user.ProfileImagePath = $"/images/{fileName}";
+        subject.SyllabusFilePath = filePath;
         await _dbContext.SaveChangesAsync();
     }
-    
-    public async Task<List<User>> GetAllUsersAsync(string email)
+
+    public async Task<FileDownloadInfo> GetSyllabus(int subjectId)
     {
-        return await _dbContext.Users
-            .Where(u => u.Email != email)
-            .ToListAsync();
+        var subject = await _dbContext.Subjects.FindAsync(subjectId);
+        if (subject == null || string.IsNullOrEmpty(subject.SyllabusFilePath))
+            throw new Exception("Syllabus not found.");
+
+        var filePath = subject.SyllabusFilePath;
+        if (!System.IO.File.Exists(filePath))
+            throw new Exception("Syllabus file does not exist on server.");
+
+        return new FileDownloadInfo
+        {
+            FilePath = filePath,
+            ContentType = "application/pdf", 
+            FileName = Path.GetFileName(filePath)
+        };
     }
+    
+    public async Task CreateModule(CreateModuleDto moduleDto)
+    {
+        var subject = await _dbContext.Subjects.FindAsync(moduleDto.SubjectId);
+        if (subject == null)
+            throw new Exception("Subject not found.");
+
+        var module = new Module
+        {
+            Title = moduleDto.Title,
+            Description = moduleDto.Description,
+            SubjectId = moduleDto.SubjectId,
+        };
+
+        await _dbContext.Modules.AddAsync(module);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    // public async Task Put(string id, IFormFile file)
+    // {
+    //     var user = await _dbContext.Users.FindAsync(id);
+    //     if (user == null)
+    //         throw new HttpException(StatusCodes.Status400BadRequest,
+    //             "Вы ввели id неверно");
+    //
+    //     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+    //     var filePath = Path.Combine("wwwroot/images", fileName);
+    //
+    //     using (var stream = new FileStream(filePath, FileMode.Create))
+    //     {
+    //         await file.CopyToAsync(stream);
+    //     }
+    //
+    //     user.ProfileImagePath = $"/images/{fileName}";
+    //     await _dbContext.SaveChangesAsync();
+    // }
 }
