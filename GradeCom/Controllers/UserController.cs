@@ -4,6 +4,7 @@ using GradeCom.Dtos.ModuleDto;
 using GradeCom.Dtos.Subject;
 using GradeCom.Dtos.UserDtos;
 using GradeCom.Models;
+using GradeCom.Models.Files;
 using GradeCom.Services.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -300,18 +301,19 @@ public class UserController : ControllerBase
         await _userService.EditModule(module);
         return Ok(new { message = "Module edited successfully" });
     }
-    
-    
+
+
+    [HttpPost("teacher/addFileForModule")]
+    public async Task<IActionResult> UploadMaterial([FromQuery] int moduleId, string type, IFormFile file)
+    {
+        if (file == null || file.Length == 0) return BadRequest("File is empty.");
+        
+        await _userService.UploadMaterialFile(moduleId, type, file);
+        return Ok("File uploaded");
+    }
 
 
 
 
 
-    // [HttpPut("upload-image/{id}")]
-    // public async Task<IActionResult> UploadProfileImage(string id, IFormFile file)
-    // {
-    //     if (file == null || file.Length == 0)
-    //         return BadRequest("No file uploaded");
-    //     return Ok(_userService.Put(id, file));
-    // }
 }

@@ -37,6 +37,7 @@ public interface IUserService
     Task CreateModule(CreateModuleDto module);
     Task DeleteModule(int moduleId);
     Task EditModule(ModuleViewDto moduleDto);
+    Task UploadMaterialFile(int moduleId, string type, IFormFile file );
 
 
 

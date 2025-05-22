@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Services\FileServices\" />
       <Folder Include="wwroot\images\" />
     </ItemGroup>
 

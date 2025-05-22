@@ -11,6 +11,7 @@ using GradeCom.Dtos.UserDtos;
 using GradeCom.Enum;
 using GradeCom.Exceptions;
 using GradeCom.Models;
+using GradeCom.Models.Files;
 using GradeCom.Utilits;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +21,12 @@ namespace GradeCom.Services.UserServices;
 public class UserService : IUserService
 {
     private readonly GrateContext _dbContext;
+    private readonly IWebHostEnvironment _env;
 
-    public UserService(GrateContext dbContext)
+    public UserService(IWebHostEnvironment env, GrateContext dbContext)
     {
         _dbContext = dbContext;
+        _env = env;
     }
     
     public async Task<UserDto> Post(UserDto userDto)
@@ -511,6 +514,41 @@ public class UserService : IUserService
         Module module = await _dbContext.Modules.FindAsync(moduleDto.Id);
         module.Title = moduleDto.Title;
         module.Description = moduleDto.Description;
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UploadMaterialFile(int moduleId, string type, IFormFile file)
+    {
+        
+        var uploadsPath = Path.Combine(_env.WebRootPath, "materials", type.ToLower());
+        Directory.CreateDirectory(uploadsPath);
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+        var filePath = Path.Combine(uploadsPath, fileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        switch (type.ToLower())
+        {
+            case "lecture":
+                _dbContext.LectureFiles.Add(new LectureFile { FileName = file.FileName, FilePath = $"/materials/lecture/{fileName}", ModuleId = moduleId });
+                break;
+            case "practice":    
+                _dbContext.PracticeFiles.Add(new PracticeFile { FileName = file.FileName, FilePath = $"/materials/practice/{fileName}", ModuleId = moduleId });
+                break;
+            case "seminar":
+                _dbContext.SeminarFiles.Add(new SeminarFile { FileName = file.FileName, FilePath = $"/materials/seminar/{fileName}", ModuleId = moduleId });
+                break;
+            case "homework":
+                _dbContext.HomeTaskFiles.Add(new HomeTaskFile { FileName = file.FileName, FilePath = $"/materials/homework/{fileName}", ModuleId = moduleId });
+                break;
+            default:
+                throw new Exception("Invalid type.");
+        }
+
         await _dbContext.SaveChangesAsync();
     }
 
