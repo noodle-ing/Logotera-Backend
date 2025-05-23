@@ -38,6 +38,8 @@ public interface IUserService
     Task DeleteModule(int moduleId);
     Task EditModule(ModuleViewDto moduleDto);
     Task UploadMaterialFile(int moduleId, string type, IFormFile file );
+    Task<FileDownloadInfo> GetMaterial(int fileId, string fileType);
+
 
 
 

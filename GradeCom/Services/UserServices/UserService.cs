@@ -12,6 +12,7 @@ using GradeCom.Enum;
 using GradeCom.Exceptions;
 using GradeCom.Models;
 using GradeCom.Models.Files;
+using GradeCom.Models.Files.Interface;
 using GradeCom.Utilits;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -519,7 +520,6 @@ public class UserService : IUserService
 
     public async Task UploadMaterialFile(int moduleId, string type, IFormFile file)
     {
-        
         var uploadsPath = Path.Combine(_env.WebRootPath, "materials", type.ToLower());
         Directory.CreateDirectory(uploadsPath);
 
@@ -531,19 +531,46 @@ public class UserService : IUserService
             await file.CopyToAsync(stream);
         }
 
+        var virtualPath = $"/materials/{type.ToLower()}/{fileName}";
+        var contentType = file.ContentType;
+
         switch (type.ToLower())
         {
             case "lecture":
-                _dbContext.LectureFiles.Add(new LectureFile { FileName = file.FileName, FilePath = $"/materials/lecture/{fileName}", ModuleId = moduleId });
+                _dbContext.LectureFiles.Add(new LectureFile
+                {
+                    FileName = file.FileName,
+                    FilePath = virtualPath,
+                    ContentType = contentType,
+                    ModuleId = moduleId
+                });
                 break;
-            case "practice":    
-                _dbContext.PracticeFiles.Add(new PracticeFile { FileName = file.FileName, FilePath = $"/materials/practice/{fileName}", ModuleId = moduleId });
+            case "practice":
+                _dbContext.PracticeFiles.Add(new PracticeFile
+                {
+                    FileName = file.FileName,
+                    FilePath = virtualPath,
+                    ContentType = contentType,
+                    ModuleId = moduleId
+                });
                 break;
             case "seminar":
-                _dbContext.SeminarFiles.Add(new SeminarFile { FileName = file.FileName, FilePath = $"/materials/seminar/{fileName}", ModuleId = moduleId });
+                _dbContext.SeminarFiles.Add(new SeminarFile
+                {
+                    FileName = file.FileName,
+                    FilePath = virtualPath,
+                    ContentType = contentType,
+                    ModuleId = moduleId
+                });
                 break;
             case "homework":
-                _dbContext.HomeTaskFiles.Add(new HomeTaskFile { FileName = file.FileName, FilePath = $"/materials/homework/{fileName}", ModuleId = moduleId });
+                _dbContext.HomeTaskFiles.Add(new HomeTaskFile
+                {
+                    FileName = file.FileName,
+                    FilePath = virtualPath,
+                    ContentType = contentType,
+                    ModuleId = moduleId
+                });
                 break;
             default:
                 throw new Exception("Invalid type.");
@@ -551,6 +578,35 @@ public class UserService : IUserService
 
         await _dbContext.SaveChangesAsync();
     }
+    
+    
+    public async Task<FileDownloadInfo> GetMaterial(int fileId, string fileType)
+    {
+        IFileEntity? file = fileType.ToLower() switch
+        {
+            "lecture" => await _dbContext.LectureFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "practice" => await _dbContext.PracticeFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "seminar" => await _dbContext.SeminarFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "homework" => await _dbContext.HomeTaskFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            _ => throw new Exception("Invalid type.")
+        };
+
+        if (file == null || string.IsNullOrEmpty(file.FilePath))
+            throw new Exception("File not found or missing path.");
+
+        var physicalPath = Path.Combine(_env.WebRootPath, file.FilePath.TrimStart('/'));
+
+        if (!System.IO.File.Exists(physicalPath))
+            throw new Exception("File does not exist on the server.");
+
+        return new FileDownloadInfo
+        {
+            FilePath = physicalPath,
+            ContentType = (file as dynamic).ContentType ?? "application/octet-stream", // fallback
+            FileName = Path.GetFileName(physicalPath)
+        };
+    }
+
 
 
     // public async Task Put(string id, IFormFile file)

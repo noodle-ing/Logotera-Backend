@@ -311,6 +311,22 @@ public class UserController : ControllerBase
         await _userService.UploadMaterialFile(moduleId, type, file);
         return Ok("File uploaded");
     }
+    
+    
+    [HttpGet("teacher/downloadMaterial")]
+    [Authorize(Roles = "Teacher,Student")]
+    public async Task<IActionResult> GetMaterial([FromQuery] int fileId, string fileType)
+    {
+        try
+        {
+            var fileInfo = await _userService.GetMaterial(fileId, fileType);
+            return PhysicalFile(fileInfo.FilePath, fileInfo.ContentType, fileInfo.FileName);
+        }
+        catch (Exception ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
 
 
 
