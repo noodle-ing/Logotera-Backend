@@ -397,22 +397,20 @@ public class UserService : IUserService
             .ToListAsync();
         return subjects;
     }
-
+    
     public async Task<SubjectShowDto> GetSubjectForTeacher(int subjectId)
     {
         var subject = await _dbContext.Subjects
-            .Include(s => s.LecturerTeacher)
-            .ThenInclude(t => t.User)
-            .Include(s => s.PracticeTeacher)
-            .ThenInclude(t => t.User)
+            .Include(s => s.LecturerTeacher).ThenInclude(t => t.User)
+            .Include(s => s.PracticeTeacher).ThenInclude(t => t.User)
             .Include(s => s.Groups)
-            .Include(s => s.Modules) 
+            .Include(s => s.Modules)
             .FirstOrDefaultAsync(s => s.Id == subjectId);
 
         if (subject == null)
             throw new Exception("Subject not found");
 
-        return new SubjectShowDto
+        var dto = new SubjectShowDto
         {
             Id = subject.Id,
             Name = subject.Name,
@@ -434,15 +432,42 @@ public class UserService : IUserService
                 Id = g.Id,
                 Name = g.Name
             }).ToList() ?? new List<GroupViewDto>(),
-            Modules = subject.Modules?.Select(m => new ModuleViewDto
-            {
-                Id = m.Id,
-                Title = m.Title,
-                Description = m.Description,
-                
-            }).ToList() ?? new List<ModuleViewDto>()
+
+            Modules = new List<ModuleViewDto>()
         };
+
+        foreach (var module in subject.Modules ?? new List<Module>())
+        {
+            var moduleDto = new ModuleViewDto
+            {
+                Id = module.Id,
+                Title = module.Title,
+                Description = module.Description
+            };
+
+            var lectureFiles = await _dbContext.LectureFiles.Where(f => f.ModuleId == module.Id).ToListAsync();
+            var practiceFiles = await _dbContext.PracticeFiles.Where(f => f.ModuleId == module.Id).ToListAsync();
+            var seminarFiles = await _dbContext.SeminarFiles.Where(f => f.ModuleId == module.Id).ToListAsync();
+            var homeTaskFiles = await _dbContext.HomeTaskFiles.Where(f => f.ModuleId == module.Id).ToListAsync();
+
+            foreach (var file in lectureFiles)
+                moduleDto.LectureMaterial.Add(await GetMaterial(file.Id, "lecture"));
+
+            foreach (var file in practiceFiles)
+                moduleDto.PracticeMaterial.Add(await GetMaterial(file.Id, "practice"));
+
+            foreach (var file in seminarFiles)
+                moduleDto.SeminarMaterial.Add(await GetMaterial(file.Id, "seminar"));
+
+            foreach (var file in homeTaskFiles)
+                moduleDto.HomeMaterial.Add(await GetMaterial(file.Id, "homework"));
+
+            dto.Modules.Add(moduleDto);
+        }
+
+        return dto;
     }
+
 
     public async Task AddSyllabus(int subjectId, IFormFile file)
     {
