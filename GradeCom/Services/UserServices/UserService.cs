@@ -381,10 +381,7 @@ public class UserService : IUserService
 
         return result;
     }
-
-
- 
-
+    
     public async Task<List<Subject>> GetAllTeacherSubject(string email)
     {
         User userTeacher = await _dbContext.Users
@@ -441,7 +438,8 @@ public class UserService : IUserService
             {
                 Id = m.Id,
                 Title = m.Title,
-                Description = m.Description
+                Description = m.Description,
+                
             }).ToList() ?? new List<ModuleViewDto>()
         };
     }
@@ -607,6 +605,19 @@ public class UserService : IUserService
         };
     }
 
+    public async Task DeleteMaterial(int fileId, string fileType)
+    {
+        object? file = fileType.ToLower() switch
+        {
+            "lecture" => await _dbContext.LectureFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "practice" => await _dbContext.PracticeFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "seminar" => await _dbContext.SeminarFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            "homework" => await _dbContext.HomeTaskFiles.FirstOrDefaultAsync(f => f.Id == fileId),
+            _ => throw new Exception("Invalid type.")
+        };
+         _dbContext.Remove(file);
+         await _dbContext.SaveChangesAsync();
+    }
 
 
     // public async Task Put(string id, IFormFile file)

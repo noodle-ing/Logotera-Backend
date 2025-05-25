@@ -328,7 +328,13 @@ public class UserController : ControllerBase
         }
     }
 
-
+    [HttpDelete("teacher/deleteMaterial")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<IActionResult> DeleteMaterial([FromQuery] int fileId, string fileType)
+    {
+        await _userService.DeleteMaterial(fileId, fileType);
+        return Ok(new { message = "Material deleted successfully" });
+    }
 
 
 

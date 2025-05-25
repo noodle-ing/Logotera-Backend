@@ -14,5 +14,4 @@ public class SubjectShowDto
     public List<GroupViewDto> Groups { get; set; } = new();
     public string? SyllabusFilePath { get; set; }
     public List<ModuleViewDto> Modules { get; set; } = new();
-
 }
