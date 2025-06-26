@@ -4,7 +4,6 @@ using Logotera.Context;
 using Logotera.Models;
 using Logotera.Services.AuthenticationServices;
 using Logotera.Services.UserServices;
-using Logotera.Utilits;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -100,8 +99,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Admin", policy => policy.RequireRole("Admin"))
-    .AddPolicy("Student", policy => policy.RequireRole("Student"))
-    .AddPolicy("Teacher", policy => policy.RequireRole("Teacher"));
+    .AddPolicy("User", policy => policy.RequireRole("User"));
 
 var app = builder.Build();
 
@@ -110,7 +108,7 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-    var roles = new[] { "Admin", "Student", "Teacher"};
+    var roles = new[] { "Admin", "User"};
  
     foreach (var role in roles)
     {
