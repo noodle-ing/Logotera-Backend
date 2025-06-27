@@ -43,7 +43,7 @@ public class AuthenticationService : IAuthenticationService
                 $"Невозможно зарегистрировать пользователя {requestDto.Email}," +
                 $"ошибка: {GetErrorsText(result.Errors)}");
 
-        result = await _userManager.AddToRoleAsync(user, requestDto.Role);
+        result = await _userManager.AddToRoleAsync(user, "User");
 
         if (!result.Succeeded)
             throw new ArgumentException($"Невозможно добавить пользователя {user} в роль Admin" +
