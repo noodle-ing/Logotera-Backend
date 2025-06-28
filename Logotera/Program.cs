@@ -106,6 +106,20 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+    // Автоматически применяем миграции при запуске
+    var context = scope.ServiceProvider.GetRequiredService<CalendarDbContext>();
+    try
+    {
+        Console.WriteLine("Применяю миграции к базе данных...");
+        await context.Database.MigrateAsync();
+        Console.WriteLine("Миграции успешно применены!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка при применении миграций: {ex.Message}");
+        throw;
+    }
+
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
