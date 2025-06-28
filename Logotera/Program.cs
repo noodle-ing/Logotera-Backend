@@ -17,10 +17,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddDbContext<GrateContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<CalendarDbContext>(options => options.UseNpgsql(connectionString));
     
 builder.Services.AddIdentity<User, Role>()
-    .AddEntityFrameworkStores<GrateContext>()
+    .AddEntityFrameworkStores<CalendarDbContext>()
     .AddDefaultTokenProviders();
 
 

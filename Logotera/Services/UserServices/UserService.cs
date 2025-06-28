@@ -11,10 +11,10 @@ namespace Logotera.Services.UserServices;
 
 public class UserService : IUserService
 {
-    private readonly GrateContext _dbContext;
+    private readonly CalendarDbContext _dbContext;
     private readonly IWebHostEnvironment _env;
 
-    public UserService(IWebHostEnvironment env, GrateContext dbContext)
+    public UserService(IWebHostEnvironment env, CalendarDbContext dbContext)
     {
         _dbContext = dbContext;
         _env = env;
