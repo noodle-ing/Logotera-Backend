@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  logotera-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: logotera-backend
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/weatherforecast"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - logotera-network
+
+networks:
+  logotera-network:
+    driver: bridge 
